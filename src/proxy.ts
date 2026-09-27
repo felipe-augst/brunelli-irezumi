@@ -3,7 +3,9 @@ import type { NextRequest } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 
 export async function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname === '/admin/login') {
+  const { pathname } = request.nextUrl
+
+  if (pathname === '/admin/login') {
     return NextResponse.next()
   }
 
@@ -11,6 +13,9 @@ export async function proxy(request: NextRequest) {
   const payload = token ? await verifyToken(token) : null
 
   if (!payload) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+    }
     return NextResponse.redirect(new URL('/admin/login', request.url))
   }
 
@@ -18,5 +23,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/api/admin/:path*'],
 }
