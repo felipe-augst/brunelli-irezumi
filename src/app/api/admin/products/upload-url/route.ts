@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getUploadUrl } from '@/lib/r2'
 import { randomUUID } from 'crypto'
-import { requireAdmin } from '@/server/auth'
+import { requireAdmin } from '@/lib/require-admin'
 
 export async function POST(request: Request) {
   const admin = await requireAdmin()

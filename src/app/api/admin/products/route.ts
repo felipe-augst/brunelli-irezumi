@@ -2,7 +2,7 @@ import { createProductSchema } from '@/schemas/product'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { revalidateTag } from 'next/cache'
-import { requireAdmin } from '@/server/auth'
+import { requireAdmin } from '@/lib/require-admin'
 
 export async function POST(request: Request) {
   const admin = await requireAdmin()

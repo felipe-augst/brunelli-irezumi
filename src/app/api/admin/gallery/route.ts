@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getPublicUrl } from '@/lib/r2'
 import { galleryImageSchema } from '@/schemas/gallery'
 import { revalidateTag } from 'next/cache'
-import { requireAdmin } from '@/server/auth'
+import { requireAdmin } from '@/lib/require-admin'
 
 export async function POST(request: Request) {
   const admin = await requireAdmin()

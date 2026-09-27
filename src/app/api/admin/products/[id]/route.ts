@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { deleteObject } from '@/lib/r2'
 import { updateProductSchema } from '@/schemas/product'
 import { revalidateTag } from 'next/cache'
-import { requireAdmin } from '@/server/auth'
+import { requireAdmin } from '@/lib/require-admin'
 
 export async function DELETE(
   _request: Request,
