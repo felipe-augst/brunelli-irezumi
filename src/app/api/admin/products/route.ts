@@ -2,8 +2,13 @@ import { createProductSchema } from '@/schemas/product'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { revalidateTag } from 'next/cache'
+import { requireAdmin } from '@/server/auth'
 
 export async function POST(request: Request) {
+  const admin = await requireAdmin()
+  if (!admin) {
+    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+  }
   try {
     const body = await request.json()
     const parsed = createProductSchema.safeParse(body)

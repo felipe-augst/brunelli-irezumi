@@ -3,11 +3,17 @@ import { prisma } from '@/lib/prisma'
 import { deleteObject } from '@/lib/r2'
 import { updateProductSchema } from '@/schemas/product'
 import { revalidateTag } from 'next/cache'
+import { requireAdmin } from '@/server/auth'
 
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const admin = await requireAdmin()
+  if (!admin) {
+    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+  }
+
   const { id } = await params
   try {
     const product = await prisma.product.findUnique({
@@ -50,6 +56,10 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const admin = await requireAdmin()
+  if (!admin) {
+    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+  }
   try {
     const { id } = await params
     const body = await request.json()

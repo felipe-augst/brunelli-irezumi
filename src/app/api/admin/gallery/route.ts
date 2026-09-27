@@ -3,8 +3,14 @@ import { prisma } from '@/lib/prisma'
 import { getPublicUrl } from '@/lib/r2'
 import { galleryImageSchema } from '@/schemas/gallery'
 import { revalidateTag } from 'next/cache'
+import { requireAdmin } from '@/server/auth'
 
 export async function POST(request: Request) {
+  const admin = await requireAdmin()
+  if (!admin) {
+    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+  }
+
   try {
     const parsed = galleryImageSchema.safeParse(await request.json())
 
