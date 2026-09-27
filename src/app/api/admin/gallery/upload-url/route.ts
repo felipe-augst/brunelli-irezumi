@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server'
 import { getUploadUrl } from '@/lib/r2'
 import { randomUUID } from 'crypto'
+import { requireAdmin } from '@/lib/require-admin'
 
 export async function POST(request: Request) {
+  const admin = await requireAdmin()
+  if (!admin) {
+    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+  }
+
   try {
     const { contentType } = await request.json()
     if (!contentType || !contentType.startsWith('image/')) {
