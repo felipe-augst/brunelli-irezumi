@@ -214,12 +214,11 @@ Modelagem que deve ser preservada:
 
 ## Como o Claude Code deve trabalhar aqui
 
-- **Não fazer commit nem push.** Quem controla o git é o desenvolvedor.
-- Trabalhar só nos arquivos pedidos. Não alterar `schema.prisma`, migrations, `next.config.ts`, config do commitlint, `.env*` nem dependências sem pedido explícito.
-- Ao terminar, rodar e reportar: `npm run format:check`, `npm run lint`, `npx tsc --noEmit`, `npm run test:run` e `npm run build`.
-- Entregar o relatório com: arquivos alterados, resultado das checagens e uma seção **"notei mas não alterei"**.
-- Antes de afirmar que algo está protegido, testado ou corrigido, verificar no código (`grep`, leitura do arquivo, execução). Não assumir.
-- Em dúvida entre dois padrões, seguir este arquivo e sinalizar a divergência.
+- Pode commitar localmente na branch de feature (nunca em develop nem em main). A mensagem segue o commitlint: Conventional Commits, escopo da lista de escopos acima e cabeçalho de até 100 caracteres. Nunca usar --no-verify nem --amend em commit já feito. Se o hook rejeitar, corrigir a mensagem e repetir.
+- Nunca fazer push, abrir PR nem fazer merge. Quem faz é o desenvolvedor, depois de auditar `git diff develop...HEAD`.
+- Nunca usar `git add -A` nem `git add .`: adicionar arquivo por arquivo.
+- Não usar /implement-spec nem /wayfinder sem pedido explícito.
+- No fim de cada ticket, rodar e reportar: `npm run format:check`, `npm run lint`, `npx tsc --noEmit`, `npm run test:run` e `npm run build`, dizendo se rodaram com `rtk proxy` (saída bruta).
 
 ---
 
