@@ -4,7 +4,9 @@ import { useEffect } from 'react'
 import Image from 'next/image'
 import { X, Trash2 } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
+import { cartTotalCents, lineTotalCents, MAX_CART_QUANTITY } from '@/lib/cart'
 import { formatCentsToBRL } from '@/lib/format-currency'
+import { buildOrderMessage, buildWhatsAppUrl } from '@/lib/whatsapp'
 import { WHATSAPP_URL } from '@/data/projects'
 
 export function CartDrawer() {
@@ -24,11 +26,7 @@ export function CartDrawer() {
     }
   }, [isDrawerOpen])
 
-  const total = items.reduce(
-    (sum, item) =>
-      sum + (item.promoPriceCents ?? item.priceCents) * item.quantity,
-    0,
-  )
+  const total = cartTotalCents(items)
 
   return (
     <>
@@ -80,9 +78,7 @@ export function CartDrawer() {
                     {item.title}
                   </p>
                   <p className="text-accent text-sm font-bold">
-                    {formatCentsToBRL(
-                      (item.promoPriceCents ?? item.priceCents) * item.quantity,
-                    )}
+                    {formatCentsToBRL(lineTotalCents(item))}
                   </p>
                 </div>
                 <div className="border-outline-variant flex gap-6 rounded-full border px-3 py-1.5">
@@ -90,15 +86,16 @@ export function CartDrawer() {
                     disabled={item.quantity === 1}
                     onClick={() => decreaseQuantity(item.productId)}
                     aria-label={`Diminuir quantidade de ${item.title}`}
-                    className="text-on-surface"
+                    className="text-on-surface disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     -
                   </button>
                   {item.quantity}
                   <button
+                    disabled={item.quantity >= MAX_CART_QUANTITY}
                     onClick={() => increaseQuantity(item.productId)}
                     aria-label={`Aumentar quantidade de ${item.title}`}
-                    className="text-on-surface"
+                    className="text-on-surface disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     +
                   </button>
@@ -120,15 +117,8 @@ export function CartDrawer() {
             </div>
             <button
               onClick={() => {
-                const lines = items.map(
-                  (item) =>
-                    `- ${item.title} (${item.quantity}x) - ${formatCentsToBRL(
-                      (item.promoPriceCents ?? item.priceCents) * item.quantity,
-                    )}`,
-                )
-                const message = `Olá Felipe, gostaria de fazer o seguinte pedido:\n\n${lines.join('\n')}\n\nTotal: ${formatCentsToBRL(total)}`
                 window.open(
-                  `${WHATSAPP_URL}?text=${encodeURIComponent(message)}`,
+                  buildWhatsAppUrl(WHATSAPP_URL, buildOrderMessage(items)),
                   '_blank',
                 )
               }}

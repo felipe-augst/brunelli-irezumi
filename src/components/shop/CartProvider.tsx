@@ -1,8 +1,18 @@
 'use client'
 
-import { useState, useSyncExternalStore } from 'react'
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
-import { CartContext, type CartItem } from '@/contexts/CartContext'
+import { CartContext } from '@/contexts/CartContext'
+import type { CartItem } from '@/types/cart'
+import {
+  addToCart,
+  decreaseQuantity as decreaseCartQuantity,
+  increaseQuantity as increaseCartQuantity,
+  parseCart,
+  reconcileCart,
+  type CatalogProduct,
+  removeFromCart,
+} from '@/lib/cart'
 import {
   subscribeToCart,
   getCartSnapshot,
@@ -21,8 +31,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     getCartSnapshot,
     getCartServerSnapshot,
   )
-  // Parse the raw items from storage into CartItem objects
-  const items: CartItem[] = JSON.parse(rawItems)
+  // Dados inválidos no storage viram um carrinho vazio, sem lançar exceção
+  const items = useMemo(() => parseCart(rawItems), [rawItems])
 
   // State to control the visibility of the cart drawer
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
@@ -31,53 +41,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setIsDrawerOpen((prev) => !prev)
   }
 
-  /**
-   * Adds a new item to the cart or increases the quantity of an existing item
-   * @param newItem - The cart item to add or update
-   */
   function addItem(newItem: CartItem) {
-    // Check if the item already exists in the cart
-    const existing = items.find((item) => item.productId === newItem.productId)
-
-    // Update quantity if item exists, otherwise add new item
-    const newItems = existing
-      ? items.map((item) =>
-          item.productId === newItem.productId
-            ? { ...item, quantity: item.quantity + 1 }
-            : item,
-        )
-      : [...items, newItem]
-
-    // Persist the updated cart items
-    persistCart(newItems)
+    persistCart(addToCart(items, newItem))
   }
 
   function removeItem(productId: string) {
-    persistCart(items.filter((item) => item.productId !== productId))
+    persistCart(removeFromCart(items, productId))
   }
 
   function increaseQuantity(productId: string) {
-    persistCart(
-      items.map((item) =>
-        item.productId === productId
-          ? { ...item, quantity: item.quantity + 1 }
-          : item,
-      ),
-    )
+    persistCart(increaseCartQuantity(items, productId))
   }
 
   function decreaseQuantity(productId: string) {
-    persistCart(
-      items.map((item) => {
-        if (item.productId === productId && item.quantity === 1) {
-          return { ...item, quantity: 1 }
-        }
-        return item.productId === productId
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      }),
-    )
+    persistCart(decreaseCartQuantity(items, productId))
   }
+
+  // Lê direto do storage para não depender do render atual (referência estável)
+  const reconcileWith = useCallback((catalog: CatalogProduct[]) => {
+    const current = parseCart(getCartSnapshot())
+    const { items: reconciled, changed } = reconcileCart(current, catalog)
+    if (changed) persistCart(reconciled)
+  }, [])
 
   return (
     <CartContext.Provider
@@ -87,6 +72,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeItem,
         increaseQuantity,
         decreaseQuantity,
+        reconcileWith,
         isDrawerOpen,
         toggleDrawer,
       }}
