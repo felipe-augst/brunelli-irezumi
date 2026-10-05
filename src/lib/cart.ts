@@ -1,5 +1,7 @@
 import type { CartItem } from '@/types/cart'
 
+export const MAX_CART_QUANTITY = 99
+
 export type CatalogProduct = {
   id: string
   title: string
@@ -23,6 +25,7 @@ export function isCartItem(value: unknown): value is CartItem {
     isPositiveInt(v.priceCents) &&
     (v.promoPriceCents === null || isPositiveInt(v.promoPriceCents)) &&
     isPositiveInt(v.quantity) &&
+    v.quantity <= MAX_CART_QUANTITY &&
     (typeof v.imageUrl === 'string' || v.imageUrl === null)
   )
 }
@@ -57,11 +60,7 @@ export function parseCart(raw: string): CartItem[] {
 export function addToCart(items: CartItem[], newItem: CartItem): CartItem[] {
   const exists = items.some((item) => item.productId === newItem.productId)
   return exists
-    ? items.map((item) =>
-        item.productId === newItem.productId
-          ? { ...item, quantity: item.quantity + 1 }
-          : item,
-      )
+    ? increaseQuantity(items, newItem.productId)
     : [...items, newItem]
 }
 
@@ -78,7 +77,7 @@ export function increaseQuantity(
 ): CartItem[] {
   return items.map((item) =>
     item.productId === productId
-      ? { ...item, quantity: item.quantity + 1 }
+      ? { ...item, quantity: Math.min(MAX_CART_QUANTITY, item.quantity + 1) }
       : item,
   )
 }
@@ -94,12 +93,16 @@ export function decreaseQuantity(
   )
 }
 
+export function unitPriceCents(item: CartItem): number {
+  return item.promoPriceCents ?? item.priceCents
+}
+
+export function lineTotalCents(item: CartItem): number {
+  return unitPriceCents(item) * item.quantity
+}
+
 export function cartTotalCents(items: CartItem[]): number {
-  return items.reduce(
-    (sum, item) =>
-      sum + (item.promoPriceCents ?? item.priceCents) * item.quantity,
-    0,
-  )
+  return items.reduce((sum, item) => sum + lineTotalCents(item), 0)
 }
 
 export function cartItemCount(items: CartItem[]): number {

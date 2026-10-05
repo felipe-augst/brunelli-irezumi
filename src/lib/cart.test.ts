@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { ProductTag } from '@/generated/prisma/enums'
 import type { CartItem } from '@/types/cart'
 import {
   addToCart,
@@ -7,9 +8,12 @@ import {
   cartTotalCents,
   decreaseQuantity,
   increaseQuantity,
+  lineTotalCents,
+  MAX_CART_QUANTITY,
   parseCart,
   reconcileCart,
   removeFromCart,
+  unitPriceCents,
   type CatalogProduct,
 } from './cart'
 
@@ -306,5 +310,55 @@ describe('reconcileCart', () => {
     )
     expect(result.changed).toBe(true)
     expect(result.items.map((i) => i.productId)).toEqual(['p1'])
+  })
+})
+
+describe('teto de quantidade', () => {
+  it('MAX_CART_QUANTITY é 99', () => {
+    expect(MAX_CART_QUANTITY).toBe(99)
+  })
+
+  it('parseCart aceita 99 e descarta acima disso sem ajustar', () => {
+    const raw = JSON.stringify([
+      makeItem({ productId: 'a', quantity: 99 }),
+      makeItem({ productId: 'b', quantity: 100 }),
+    ])
+    expect(parseCart(raw).map((i) => i.productId)).toEqual(['a'])
+  })
+
+  it('increaseQuantity não passa de 99', () => {
+    const result = increaseQuantity([makeItem({ quantity: 99 })], 'p1')
+    expect(result[0]?.quantity).toBe(99)
+    expect(
+      increaseQuantity([makeItem({ quantity: 98 })], 'p1')[0]?.quantity,
+    ).toBe(99)
+  })
+
+  it('addToCart em item existente não passa de 99', () => {
+    const result = addToCart([makeItem({ quantity: 99 })], makeItem())
+    expect(result[0]?.quantity).toBe(99)
+  })
+})
+
+describe('unitPriceCents e lineTotalCents', () => {
+  it('unitPriceCents usa a promoção quando existe', () => {
+    expect(unitPriceCents(makeItem())).toBe(10000)
+    expect(unitPriceCents(makeItem({ promoPriceCents: 7000 }))).toBe(7000)
+  })
+
+  it('lineTotalCents multiplica pela quantity', () => {
+    expect(lineTotalCents(makeItem({ quantity: 3 }))).toBe(30000)
+    expect(
+      lineTotalCents(makeItem({ promoPriceCents: 7000, quantity: 3 })),
+    ).toBe(21000)
+  })
+})
+
+describe('canAddToCart com o enum real do Prisma', () => {
+  it('os literais batem com ProductTag', () => {
+    expect(canAddToCart([ProductTag.MADE_TO_ORDER])).toBe(false)
+    expect(canAddToCart([ProductTag.SOLD_OUT])).toBe(false)
+    expect(canAddToCart([ProductTag.LIMITED])).toBe(true)
+    expect(canAddToCart([ProductTag.ON_SALE])).toBe(true)
   })
 })

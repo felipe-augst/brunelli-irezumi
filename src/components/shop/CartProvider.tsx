@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useSyncExternalStore } from 'react'
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import { CartContext } from '@/contexts/CartContext'
 import type { CartItem } from '@/types/cart'
@@ -9,6 +9,8 @@ import {
   decreaseQuantity as decreaseCartQuantity,
   increaseQuantity as increaseCartQuantity,
   parseCart,
+  reconcileCart,
+  type CatalogProduct,
   removeFromCart,
 } from '@/lib/cart'
 import {
@@ -55,6 +57,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     persistCart(decreaseCartQuantity(items, productId))
   }
 
+  // Lê direto do storage para não depender do render atual (referência estável)
+  const reconcileWith = useCallback((catalog: CatalogProduct[]) => {
+    const current = parseCart(getCartSnapshot())
+    const { items: reconciled, changed } = reconcileCart(current, catalog)
+    if (changed) persistCart(reconciled)
+  }, [])
+
   return (
     <CartContext.Provider
       value={{
@@ -63,6 +72,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeItem,
         increaseQuantity,
         decreaseQuantity,
+        reconcileWith,
         isDrawerOpen,
         toggleDrawer,
       }}

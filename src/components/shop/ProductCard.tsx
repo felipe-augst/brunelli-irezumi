@@ -5,6 +5,9 @@ import { formatCentsToBRL } from '@/lib/format-currency'
 import { CATEGORY_LABELS, TAG_LABELS } from '@/data/product-labels'
 import { WHATSAPP_URL } from '@/data/projects'
 import { useCart } from '@/hooks/useCart'
+import { cn } from '@/lib/utils'
+import { canAddToCart } from '@/lib/cart'
+import { buildInquiryMessage, buildWhatsAppUrl } from '@/lib/whatsapp'
 
 type Product = {
   id: string
@@ -25,7 +28,8 @@ type ProductCardProps = {
 export function ProductCard({ product, onOpenImage }: ProductCardProps) {
   const { addItem } = useCart()
   const coverImage = product.images[0]
-  const firstTag = product.tags[0]
+  const isSoldOut = product.tags.includes('SOLD_OUT')
+  const badgeTag = isSoldOut ? 'SOLD_OUT' : product.tags[0]
 
   return (
     <div className="group border-accent/20 flex min-w-0 flex-col gap-1 self-stretch border">
@@ -39,21 +43,24 @@ export function ProductCard({ product, onOpenImage }: ProductCardProps) {
             src={coverImage.url}
             alt={product.title}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className={cn(
+              'object-cover transition-transform duration-500 group-hover:scale-105',
+              isSoldOut && 'grayscale',
+            )}
             sizes="(max-width: 768px) 50vw, 25vw"
           />
         )}
         <span className="text-on-surface-variant border-accent/30 bg-surface/80 absolute top-2 left-2 rounded-full border px-3 py-1 text-xs backdrop-blur-sm">
           {product.category && CATEGORY_LABELS[product.category]}
         </span>
-        {firstTag && (
+        {badgeTag && (
           <div className="absolute top-2 right-2 flex items-center gap-1.5">
             <span className="relative flex h-2.5 w-2.5">
               <span className="bg-accent absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
               <span className="bg-accent relative inline-flex h-2.5 w-2.5 rounded-full" />
             </span>
             <span className="text-on-surface bg-surface/80 rounded-full px-3 py-1 text-xs backdrop-blur-sm">
-              {TAG_LABELS[firstTag]}
+              {TAG_LABELS[badgeTag]}
             </span>
           </div>
         )}
@@ -72,7 +79,7 @@ export function ProductCard({ product, onOpenImage }: ProductCardProps) {
                 src={img.url}
                 alt={product.title}
                 fill
-                className="object-cover"
+                className={cn('object-cover', isSoldOut && 'grayscale')}
                 sizes="100px"
               />
             </button>
@@ -87,7 +94,11 @@ export function ProductCard({ product, onOpenImage }: ProductCardProps) {
         <p className="text-on-surface-variant text-sm leading-relaxed break-words">
           {product.description}
         </p>
-        {product.tags.includes('MADE_TO_ORDER') ? (
+        {isSoldOut ? (
+          <p className="text-on-surface-variant mt-auto text-end text-sm">
+            Indisponível no momento
+          </p>
+        ) : product.tags.includes('MADE_TO_ORDER') ? (
           <p className="text-accent font-headline mt-auto text-end text-sm tracking-wide uppercase">
             Valor a consultar
           </p>
@@ -106,28 +117,38 @@ export function ProductCard({ product, onOpenImage }: ProductCardProps) {
           </p>
         )}
         <button
-          className="bg-accent text-on-accent hover:bg-accent-hover mb-2 cursor-pointer rounded-full px-4 py-2 text-sm font-bold transition-colors"
+          className={`bg-accent text-on-accent hover:bg-accent-hover mb-2 rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+            isSoldOut ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+          }`}
+          disabled={isSoldOut}
+          aria-disabled={isSoldOut}
           onClick={() => {
-            if (product.tags.includes('MADE_TO_ORDER')) {
+            if (isSoldOut) return
+            if (!canAddToCart(product.tags)) {
               window.open(
-                `${WHATSAPP_URL}?text=Olá%20Felipe,%20gostaria%20de%20mais%20informações%20sobre%20o%20produto%20${product.title}, como%20posso%20encomendar?`,
+                buildWhatsAppUrl(
+                  WHATSAPP_URL,
+                  buildInquiryMessage(product.title),
+                ),
                 '_blank',
               )
-            } else {
-              addItem({
-                productId: product.id,
-                title: product.title,
-                priceCents: product.priceCents,
-                promoPriceCents: product.promoPriceCents,
-                quantity: 1,
-                imageUrl: coverImage?.url ?? null,
-              })
+              return
             }
+            addItem({
+              productId: product.id,
+              title: product.title,
+              priceCents: product.priceCents,
+              promoPriceCents: product.promoPriceCents,
+              quantity: 1,
+              imageUrl: coverImage?.url ?? null,
+            })
           }}
         >
-          {product.tags.includes('MADE_TO_ORDER')
-            ? 'Consultar pelo WhatsApp'
-            : 'Adicionar ao carrinho'}
+          {isSoldOut
+            ? 'Esgotado'
+            : product.tags.includes('MADE_TO_ORDER')
+              ? 'Consultar pelo WhatsApp'
+              : 'Adicionar ao carrinho'}
         </button>
       </div>
     </div>
