@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import Image from 'next/image'
 import { X, Trash2 } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
+import { cartTotalCents } from '@/lib/cart'
 import { formatCentsToBRL } from '@/lib/format-currency'
 import { WHATSAPP_URL } from '@/data/projects'
 
@@ -24,11 +25,7 @@ export function CartDrawer() {
     }
   }, [isDrawerOpen])
 
-  const total = items.reduce(
-    (sum, item) =>
-      sum + (item.promoPriceCents ?? item.priceCents) * item.quantity,
-    0,
-  )
+  const total = cartTotalCents(items)
 
   return (
     <>

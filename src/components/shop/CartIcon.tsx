@@ -2,11 +2,12 @@
 
 import { ShoppingBag } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
+import { cartItemCount } from '@/lib/cart'
 
 export function CartIcon() {
   const { items, toggleDrawer } = useCart()
 
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
+  const totalItems = cartItemCount(items)
 
   if (totalItems === 0) return null
 

@@ -1,3 +1,5 @@
+import type { CartItem } from '@/types/cart'
+
 const CART_KEY = 'cart'
 
 export function subscribeToCart(callback: () => void) {
@@ -6,14 +8,22 @@ export function subscribeToCart(callback: () => void) {
 }
 
 export function getCartSnapshot(): string {
-  return localStorage.getItem(CART_KEY) ?? '[]'
+  try {
+    return localStorage.getItem(CART_KEY) ?? '[]'
+  } catch {
+    return '[]'
+  }
 }
 
 export function getCartServerSnapshot(): string {
   return '[]'
 }
 
-export function persistCart(items: unknown[]) {
-  localStorage.setItem(CART_KEY, JSON.stringify(items))
+export function persistCart(items: CartItem[]) {
+  try {
+    localStorage.setItem(CART_KEY, JSON.stringify(items))
+  } catch (error) {
+    console.error('Falha ao salvar o carrinho no localStorage', error)
+  }
   window.dispatchEvent(new Event('storage'))
 }

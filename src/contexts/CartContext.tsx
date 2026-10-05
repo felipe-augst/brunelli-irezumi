@@ -1,13 +1,5 @@
 import { createContext } from 'react'
-
-export type CartItem = {
-  productId: string
-  title: string
-  priceCents: number
-  promoPriceCents: number | null
-  quantity: number
-  imageUrl: string | null
-}
+import type { CartItem } from '@/types/cart'
 
 export type CartContextValue = {
   items: CartItem[]
