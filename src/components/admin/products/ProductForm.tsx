@@ -25,6 +25,7 @@ export function ProductForm({ product }: ProductFormProps) {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
   const [files, setFiles] = useState<File[]>([])
+  const [inputKey, setInputKey] = useState(0)
 
   const {
     register,
@@ -60,45 +61,114 @@ export function ProductForm({ product }: ProductFormProps) {
 
     const method = product ? 'PATCH' : 'POST'
 
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
+    // Na edição, campo vazio vira null para remover a promoção
+    const payload = product
+      ? { ...data, promoPriceCents: data.promoPriceCents ?? null }
+      : data
 
-    if (!res.ok) {
-      setServerError('Erro ao criar produto')
+    let step = product
+      ? 'Falha ao atualizar o produto'
+      : 'Falha ao criar o produto'
+    let createdId: string | null = null
+    let updated = false
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error(`${step} (${res.status})`)
+
+      const productId: string = product ? product.id : (await res.json()).id
+      if (product) updated = true
+      else createdId = productId
+
+      for (const file of files) {
+        step = 'Falha ao comprimir a imagem'
+        const compressedImage = await compressImage(file)
+
+        step = 'Falha ao preparar o envio da imagem'
+        const urlResponse = await fetch('/api/admin/products/upload-url', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ contentType: 'image/webp' }),
+        })
+        if (!urlResponse.ok) throw new Error(`${step} (${urlResponse.status})`)
+        const { uploadUrl, key } = await urlResponse.json()
+
+        step = 'Falha ao enviar a imagem'
+        const putResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'content-type': 'image/webp' },
+          body: compressedImage,
+        })
+        if (!putResponse.ok) throw new Error(`${step} (${putResponse.status})`)
+
+        step = 'Falha ao registrar a imagem'
+        const registerResponse = await fetch(
+          `/api/admin/products/${productId}/images`,
+          {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ key }),
+          },
+        )
+        if (!registerResponse.ok) {
+          throw new Error(`${step} (${registerResponse.status})`)
+        }
+      }
+
+      if (!product) {
+        step = 'Falha ao ativar o produto'
+        const activateResponse = await fetch(
+          `/api/admin/products/${productId}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ active: true }),
+          },
+        )
+        if (!activateResponse.ok) {
+          throw new Error(`${step} (${activateResponse.status})`)
+        }
+      }
+    } catch (error) {
+      console.error(step, error)
+      setServerError(step)
+
+      if (createdId) {
+        // Desfaz a criação (melhor esforço) para não deixar produto incompleto
+        try {
+          const rollback = await fetch(`/api/admin/products/${createdId}`, {
+            method: 'DELETE',
+          })
+          if (!rollback.ok) {
+            console.error(
+              `Falha ao desfazer produto ${createdId} (${rollback.status})`,
+            )
+          }
+        } catch (rollbackError) {
+          console.error(`Falha ao desfazer produto ${createdId}`, rollbackError)
+        }
+      } else if (updated) {
+        // Produto já atualizado: mostra o que entrou, sem desfazer nada.
+        // Limpa a seleção para um novo envio não duplicar imagens que já entraram
+        setServerError(
+          `${step}. O produto foi atualizado; confira as imagens da lista e envie de novo as que faltarem.`,
+        )
+        setFiles([])
+        setInputKey((prev) => prev + 1)
+        router.refresh()
+      }
       return
     }
 
-    const productId = product ? product.id : (await res.json()).id
-
-    for (const file of files) {
-      const compressedImage = await compressImage(file)
-
-      const urlResponse = await fetch('/api/admin/products/upload-url', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ contentType: 'image/webp' }),
-      })
-
-      const { uploadUrl, key } = await urlResponse.json()
-
-      await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: { 'content-type': 'image/webp' },
-        body: compressedImage,
-      })
-
-      await fetch(`/api/admin/products/${productId}/images`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ key }),
-      })
-    }
-
+    // Sucesso: reset com os valores salvos (na criação, formulário vazio)
+    reset(product ? data : undefined)
+    setFiles([])
+    setInputKey((prev) => prev + 1)
     router.refresh()
-    reset()
   }
 
   return (
@@ -198,6 +268,7 @@ export function ProductForm({ product }: ProductFormProps) {
           Imagens
         </label>
         <input
+          key={inputKey}
           id="images"
           type="file"
           accept="image/*"
