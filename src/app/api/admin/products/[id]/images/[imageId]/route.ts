@@ -37,12 +37,20 @@ export async function DELETE(
 
     const key = image.url.replace(`${process.env.R2_PUBLIC_URL}/`, '')
 
-    await deleteObject(key)
+    // Banco primeiro; falha no R2 vira só log (objeto órfão)
     await prisma.productImage.delete({
       where: {
         id: imageId,
       },
     })
+    try {
+      await deleteObject(key)
+    } catch (r2Error) {
+      console.error(
+        `Objeto órfão no R2 após excluir imagem de produto (key: ${key})`,
+        r2Error,
+      )
+    }
     revalidateTag('products', { expire: 0 })
     return NextResponse.json(
       { message: 'Imagem excluída com sucesso' },

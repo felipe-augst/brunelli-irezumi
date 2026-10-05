@@ -34,6 +34,8 @@ export async function POST(request: Request) {
         promoPriceCents: parsed.data.promoPriceCents,
         category: parsed.data.category,
         tags: { set: parsed.data.tags },
+        // O formulário ativa o produto depois que todas as imagens subirem
+        active: false,
       },
     })
 
