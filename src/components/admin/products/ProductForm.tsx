@@ -24,6 +24,7 @@ type ProductFormProps = {
 export function ProductForm({ product }: ProductFormProps) {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [files, setFiles] = useState<File[]>([])
   const [inputKey, setInputKey] = useState(0)
 
@@ -49,6 +50,7 @@ export function ProductForm({ product }: ProductFormProps) {
 
   async function onSubmit(data: CreateProductData) {
     setServerError(null)
+    setSuccessMessage(null)
 
     if (!product && files.length === 0) {
       setServerError('É necessário adicionar pelo menos uma imagem')
@@ -168,14 +170,21 @@ export function ProductForm({ product }: ProductFormProps) {
     reset(product ? data : undefined)
     setFiles([])
     setInputKey((prev) => prev + 1)
+    if (product) setSuccessMessage('Produto atualizado com sucesso')
     router.refresh()
   }
+
+  let submitLabel = product ? 'Atualizar produto' : 'Criar produto'
+  if (isSubmitting) submitLabel = 'Salvando...'
+  else if (successMessage) submitLabel = successMessage
 
   return (
     <form
       onSubmit={(e) => {
         handleSubmit(onSubmit)(e)
       }}
+      // O change borbulha de todos os campos: voltar a editar some com a mensagem
+      onChange={() => setSuccessMessage(null)}
       className="flex flex-col gap-4 md:mx-auto md:min-w-96"
     >
       <div className="flex flex-col gap-1">
@@ -263,6 +272,10 @@ export function ProductForm({ product }: ProductFormProps) {
         </p>
       )}
 
+      <p role="status" aria-live="polite" className="sr-only">
+        {successMessage ?? ''}
+      </p>
+
       <div className="flex flex-col gap-1">
         <label htmlFor="images" className="text-on-surface-variant text-sm">
           Imagens
@@ -283,11 +296,7 @@ export function ProductForm({ product }: ProductFormProps) {
         disabled={isSubmitting}
         className="border-accent text-accent cursor-pointer rounded-sm border px-4 py-1.5 text-sm font-medium disabled:opacity-50"
       >
-        {isSubmitting
-          ? 'Salvando...'
-          : product
-            ? 'Atualizar produto'
-            : 'Criar produto'}
+        {submitLabel}
       </button>
     </form>
   )
