@@ -1,7 +1,7 @@
-import z from 'zod'
+import { z } from 'zod'
 
 export const galleryImageSchema = z.object({
-  key: z.string().min(1),
+  key: z.string().min(1).startsWith('gallery/', 'Chave inválida'),
   category: z.enum(['PORTFOLIO', 'PAINTING', 'COVERUP']),
 })
 

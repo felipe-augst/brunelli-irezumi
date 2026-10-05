@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { revalidateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/require-admin'
+import { parseJsonBody } from '@/lib/parse-json-body'
 
 export async function POST(
   request: Request,
@@ -12,9 +13,14 @@ export async function POST(
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
   }
 
+  const body = await parseJsonBody(request)
+  if (body === null) {
+    return NextResponse.json({ error: 'Corpo inválido' }, { status: 400 })
+  }
+
   try {
     const { id, imageId } = await params
-    const { direction } = await request.json()
+    const { direction } = body as { direction?: string }
 
     const image = await prisma.productImage.findUnique({
       where: { id: imageId },
@@ -24,6 +30,13 @@ export async function POST(
       return NextResponse.json(
         { error: 'Imagem não encontrada' },
         { status: 404 },
+      )
+    }
+
+    if (image.productId !== id) {
+      return NextResponse.json(
+        { error: 'Imagem não pertence a este produto' },
+        { status: 400 },
       )
     }
 
@@ -69,7 +82,7 @@ export async function POST(
         }),
         prisma.productImage.update({
           where: { id: image.id },
-          data: { order: 1 },
+          data: { order: 0 },
         }),
       ])
       revalidateTag('products', { expire: 0 })
@@ -82,6 +95,10 @@ export async function POST(
         orderBy: { order: 'desc' },
       })
 
+      if (!last) {
+        return NextResponse.json({ success: true })
+      }
+
       await prisma.$transaction([
         prisma.productImage.updateMany({
           where: { productId: id, order: { gt: image.order } },
@@ -89,7 +106,7 @@ export async function POST(
         }),
         prisma.productImage.update({
           where: { id: image.id },
-          data: { order: last!.order },
+          data: { order: last.order },
         }),
       ])
       revalidateTag('products', { expire: 0 })

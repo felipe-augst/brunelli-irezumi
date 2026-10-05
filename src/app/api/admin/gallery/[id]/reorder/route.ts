@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { revalidateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/require-admin'
+import { parseJsonBody } from '@/lib/parse-json-body'
 
 export async function POST(
   request: Request,
@@ -12,9 +13,14 @@ export async function POST(
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
   }
 
+  const body = await parseJsonBody(request)
+  if (body === null) {
+    return NextResponse.json({ error: 'Corpo inválido' }, { status: 400 })
+  }
+
   try {
     const { id } = await params
-    const { direction } = await request.json()
+    const { direction } = body as { direction?: string }
 
     const image = await prisma.galleryImage.findUnique({
       where: { id },
@@ -82,6 +88,10 @@ export async function POST(
         orderBy: { order: 'desc' },
       })
 
+      if (!last) {
+        return NextResponse.json({ success: true })
+      }
+
       await prisma.$transaction([
         prisma.galleryImage.updateMany({
           where: { category: image.category, order: { gt: image.order } },
@@ -89,7 +99,7 @@ export async function POST(
         }),
         prisma.galleryImage.update({
           where: { id: image.id },
-          data: { order: last!.order },
+          data: { order: last.order },
         }),
       ])
       revalidateTag('gallery', { expire: 0 })

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getPublicUrl } from '@/lib/r2'
 import { revalidateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/require-admin'
+import { parseJsonBody } from '@/lib/parse-json-body'
 
 export async function POST(
   request: Request,
@@ -13,9 +14,30 @@ export async function POST(
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
   }
 
+  const body = await parseJsonBody(request)
+  if (body === null) {
+    return NextResponse.json({ error: 'Corpo inválido' }, { status: 400 })
+  }
+
   try {
     const { id } = await params
-    const { key } = await request.json()
+    const { key } = body as { key?: unknown }
+
+    if (typeof key !== 'string' || !key.startsWith('products/')) {
+      return NextResponse.json({ error: 'Chave inválida' }, { status: 400 })
+    }
+
+    const product = await prisma.product.findUnique({
+      where: { id },
+      select: { id: true },
+    })
+
+    if (!product) {
+      return NextResponse.json(
+        { error: 'Produto não encontrado' },
+        { status: 404 },
+      )
+    }
 
     const lastImg = await prisma.productImage.findFirst({
       where: { productId: id },

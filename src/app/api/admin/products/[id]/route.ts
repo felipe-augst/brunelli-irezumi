@@ -4,6 +4,7 @@ import { deleteObject } from '@/lib/r2'
 import { updateProductSchema } from '@/schemas/product'
 import { revalidateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/require-admin'
+import { parseJsonBody } from '@/lib/parse-json-body'
 
 export async function DELETE(
   _request: Request,
@@ -60,9 +61,14 @@ export async function PATCH(
   if (!admin) {
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
   }
+
+  const body = await parseJsonBody(request)
+  if (body === null) {
+    return NextResponse.json({ error: 'Corpo inválido' }, { status: 400 })
+  }
+
   try {
     const { id } = await params
-    const body = await request.json()
     const parsed = updateProductSchema.safeParse(body)
 
     if (!parsed.success) {
