@@ -4,6 +4,7 @@ import { getPublicUrl } from '@/lib/r2'
 import { galleryImageSchema } from '@/schemas/gallery'
 import { revalidateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/require-admin'
+import { parseJsonBody } from '@/lib/parse-json-body'
 
 export async function POST(request: Request) {
   const admin = await requireAdmin()
@@ -11,8 +12,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
   }
 
+  const body = await parseJsonBody(request)
+  if (body === null) {
+    return NextResponse.json({ error: 'Corpo inválido' }, { status: 400 })
+  }
+
   try {
-    const parsed = galleryImageSchema.safeParse(await request.json())
+    const parsed = galleryImageSchema.safeParse(body)
 
     if (!parsed.success) {
       return NextResponse.json(

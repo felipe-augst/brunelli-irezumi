@@ -4,13 +4,20 @@ import { prisma } from '@/lib/prisma'
 import { signToken } from '@/lib/auth'
 import { loginSchema } from '@/schemas/login'
 import { isAccountLocked } from '@/server/auth'
+import { parseJsonBody } from '@/lib/parse-json-body'
 
 const MAX_FAILED_ATTEMPTS = 5
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000
 
+const DUMMY_HASH = bcrypt.hashSync('dummy-password', 10)
+
 export async function POST(req: Request) {
+  const body = await parseJsonBody(req)
+  if (body === null) {
+    return NextResponse.json({ error: 'Corpo inválido' }, { status: 400 })
+  }
+
   try {
-    const body = await req.json()
     const parsed = loginSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json(
@@ -25,19 +32,27 @@ export async function POST(req: Request) {
     })
 
     if (!adminUser) {
+      await bcrypt.compare(password, DUMMY_HASH)
       return NextResponse.json(
         { error: 'Credenciais inválidas' },
         { status: 401 },
       )
     }
 
-    const accountLocked = isAccountLocked(adminUser)
-
-    if (accountLocked) {
+    if (isAccountLocked(adminUser)) {
+      await bcrypt.compare(password, DUMMY_HASH)
       return NextResponse.json(
         { error: 'Credenciais inválidas' },
-        { status: 403 },
+        { status: 401 },
       )
+    }
+
+    if (adminUser.lockedUntil) {
+      await prisma.adminUser.update({
+        where: { id: adminUser.id },
+        data: { failedAttempts: 0, lockedUntil: null },
+      })
+      adminUser.failedAttempts = 0
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -54,7 +69,7 @@ export async function POST(req: Request) {
       if (updated.failedAttempts >= MAX_FAILED_ATTEMPTS) {
         await prisma.adminUser.update({
           where: { id: adminUser.id },
-          data: { lockedUntil: new Date(Date.now() + LOCKOUT_DURATION_MS) }, // 15 minutos
+          data: { lockedUntil: new Date(Date.now() + LOCKOUT_DURATION_MS) },
         })
       }
 
@@ -78,7 +93,7 @@ export async function POST(req: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 dias
+      maxAge: 60 * 60 * 24 * 7,
     })
     return response
   } catch (error) {

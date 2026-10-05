@@ -3,14 +3,20 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { revalidateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/require-admin'
+import { parseJsonBody } from '@/lib/parse-json-body'
 
 export async function POST(request: Request) {
   const admin = await requireAdmin()
   if (!admin) {
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
   }
+
+  const body = await parseJsonBody(request)
+  if (body === null) {
+    return NextResponse.json({ error: 'Corpo inválido' }, { status: 400 })
+  }
+
   try {
-    const body = await request.json()
     const parsed = createProductSchema.safeParse(body)
 
     if (!parsed.success) {
@@ -30,6 +36,7 @@ export async function POST(request: Request) {
         tags: { set: parsed.data.tags },
       },
     })
+
     revalidateTag('products', { expire: 0 })
     return NextResponse.json(product, { status: 201 })
   } catch (error) {
