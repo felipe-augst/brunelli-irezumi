@@ -219,6 +219,8 @@ Modelagem que deve ser preservada:
 - Nunca usar `git add -A` nem `git add .`: adicionar arquivo por arquivo.
 - Não usar /implement-spec nem /wayfinder sem pedido explícito.
 - No fim de cada ticket, rodar e reportar: `npm run format:check`, `npm run lint`, `npx tsc --noEmit`, `npm run test:run` e `npm run build`, dizendo se rodaram com `rtk proxy` (saída bruta).
+- Issues do GitHub: criar apenas via /to-spec e /to-tickets, depois de eu aprovar o rascunho. Não fechar, editar, comentar nem reatribuir issue por conta própria: elas fecham pelo `Closes #NN` na descrição do PR (a branch padrão é `develop`).
+- Nunca usar `gh pr merge`, `gh pr close` nem `gh repo edit`. Escrita via `gh api` só a que o /to-tickets precisa para os vínculos de bloqueio.
 
 ---
 
@@ -264,3 +266,17 @@ Documentadas em `.env.example`: `DATABASE_URL` (com `sslmode=verify-full`), `JWT
 ## Dívida técnica conhecida
 
 Itens da auditoria ainda abertos (remover daqui quando forem resolvidos): tipo `Product` redeclarado em vários componentes; `url` gravada no banco em vez da `key` do R2 (extração por `replace`, e objeto órfão no R2 quando o `PUT` dá certo mas o registro da imagem falha); lógica de reordenação duplicada entre galeria e produto; sem constraint única em `order` (a troca por dois `update` a violaria no meio da operação); reordenação concorrente entre linhas diferentes; `PATCH` de produto devolve 500 se o produto for apagado entre a leitura e o update (P2025); sem limite de tamanho no `upload-url` (exige mudar `lib/r2.ts`); CSP não configurada; `@import` do Material Symbols em `globals.css` (carrega CSS do Google; remover se ninguém usar `material-symbols-outlined`); o schema exige preço em produto sob encomenda, que nunca é exibido; o `eslint.config.mjs` não tem `ignores` (`eslint .` varre `.next`); `DATABASE_URL` com `verify-full` ainda só no `.env` local (falta Vercel e GitHub Actions); testes de rotas, de componentes e do proxy (schemas de produto, precificação e carrinho já têm testes).
+
+## Agent skills
+
+### Issue tracker
+
+Issues vivem no GitHub Issues do repo (CLI `gh`). Ver `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Vocabulário padrão: needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix. Ver `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: um `CONTEXT.md` + `docs/adr/` na raiz. Ver `docs/agents/domain.md`.
