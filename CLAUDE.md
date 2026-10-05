@@ -192,7 +192,12 @@ Modelagem que deve ser preservada:
 - Checkout é uma mensagem formatada aberta em `wa.me`. Não há gateway de pagamento, pedido persistido nem controle de estoque. `ESGOTADO` é uma tag manual.
 - Produto `MADE_TO_ORDER` não entra no carrinho: mostra "Valor a consultar" e leva direto ao WhatsApp.
 - Carrinho: `CartContext` + `CartProvider` no layout raiz + hook `useCart`. Persistência em `localStorage` via `useSyncExternalStore` (`lib/cart-storage.ts`).
-- Preço em uso: `promoPriceCents ?? priceCents`.
+- Preço em uso: `unitPriceCents` e `lineTotalCents` (`lib/cart.ts`). Qualquer lugar que mostra ou soma preço do carrinho usa esses helpers, nunca a conta inline.
+- Quantidade máxima por item: 99 (`MAX_CART_QUANTITY`). Item salvo acima disso é descartado ao ler o carrinho.
+- Mensagens do WhatsApp (pedido e consulta) vêm de `lib/whatsapp.ts` e são sempre montadas com `buildWhatsAppUrl`, que aplica `encodeURIComponent` na mensagem inteira. Nunca concatenar título de produto direto na URL.
+- A lógica do carrinho vive em funções puras em `lib/cart.ts` (sem React, testadas). O `CartProvider` só liga essas funções ao storage. O `CartItem` está em `types/cart.ts`.
+- Produto `SOLD_OUT` não vai ao carrinho: botão desabilitado ("Esgotado"), capa em cinza e "Indisponível no momento" no lugar do preço. A regra de quem pode entrar no carrinho é `canAddToCart`.
+- O carrinho é lido de `localStorage` com validação (`parseCart`): dado inválido é descartado item a item e nunca lança exceção. Se a gravação falhar, o carrinho da sessão continua em memória. Ao abrir `/loja`, `CartReconciler` reconcilia o carrinho com o catálogo (remove produto inexistente ou esgotado e atualiza preço e título).
 
 ---
 
@@ -255,7 +260,8 @@ Documentadas em `.env.example`: `DATABASE_URL` (com `sslmode=verify-full`), `JWT
 - Imagens públicas pelo domínio `r2.dev`; domínio próprio exigiria mover o DNS inteiro para a Cloudflare.
 - Previews da Vercel sem CORS liberado no R2.
 - Criação de produto com falha de upload é desfeita (`DELETE`) em vez de salvar rascunho.
+- A reconciliação do carrinho com o catálogo só roda ao abrir `/loja`; o pedido é conferido pelo estúdio no WhatsApp antes de qualquer pagamento.
 
 ## Dívida técnica conhecida
 
-Itens da auditoria ainda abertos (remover daqui quando forem resolvidos): tipo `Product` redeclarado em vários componentes; `url` gravada no banco em vez da `key` do R2 (extração por `replace`, e objeto órfão no R2 quando o `PUT` dá certo mas o registro da imagem falha); lógica de reordenação duplicada entre galeria e produto; sem constraint única em `order` (a troca por dois `update` a violaria no meio da operação); reordenação concorrente entre linhas diferentes; `PATCH` de produto devolve 500 se o produto for apagado entre a leitura e o update (P2025); CSP não configurada; `@import` do Material Symbols em `globals.css` (carrega CSS do Google; remover se ninguém usar `material-symbols-outlined`); testes de rotas, de componentes e do carrinho (os schemas de produto e a precificação já têm testes).
+Itens da auditoria ainda abertos (remover daqui quando forem resolvidos): tipo `Product` redeclarado em vários componentes; `url` gravada no banco em vez da `key` do R2 (extração por `replace`, e objeto órfão no R2 quando o `PUT` dá certo mas o registro da imagem falha); lógica de reordenação duplicada entre galeria e produto; sem constraint única em `order` (a troca por dois `update` a violaria no meio da operação); reordenação concorrente entre linhas diferentes; `PATCH` de produto devolve 500 se o produto for apagado entre a leitura e o update (P2025); sem limite de tamanho no `upload-url` (exige mudar `lib/r2.ts`); CSP não configurada; `@import` do Material Symbols em `globals.css` (carrega CSS do Google; remover se ninguém usar `material-symbols-outlined`); o schema exige preço em produto sob encomenda, que nunca é exibido; o `eslint.config.mjs` não tem `ignores` (`eslint .` varre `.next`); `DATABASE_URL` com `verify-full` ainda só no `.env` local (falta Vercel e GitHub Actions); testes de rotas, de componentes e do proxy (schemas de produto, precificação e carrinho já têm testes).
