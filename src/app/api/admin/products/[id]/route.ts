@@ -5,6 +5,7 @@ import { updateProductSchema } from '@/schemas/product'
 import { revalidateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/require-admin'
 import { parseJsonBody } from '@/lib/parse-json-body'
+import { isPromoPriceValid } from '@/server/product-pricing'
 
 export async function DELETE(
   _request: Request,
@@ -31,12 +32,22 @@ export async function DELETE(
       )
     }
 
-    for (const image of product.images) {
-      const key = image.url.replace(`${process.env.R2_PUBLIC_URL}/`, '')
-      await deleteObject(key)
-    }
+    // Banco primeiro: falha no R2 deixa só órfãos, nunca produto sem imagem
     await prisma.product.delete({
       where: { id: id },
+    })
+
+    const keys = product.images.map((image) =>
+      image.url.replace(`${process.env.R2_PUBLIC_URL}/`, ''),
+    )
+    const results = await Promise.allSettled(keys.map((k) => deleteObject(k)))
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.error(
+          `Objeto órfão no R2 após excluir produto (key: ${keys[index]})`,
+          result.reason,
+        )
+      }
     })
 
     revalidateTag('products', { expire: 0 })
@@ -74,6 +85,28 @@ export async function PATCH(
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Dados do produto inválidos' },
+        { status: 400 },
+      )
+    }
+
+    const current = await prisma.product.findUnique({ where: { id } })
+    if (!current) {
+      return NextResponse.json(
+        { error: 'Produto não encontrado' },
+        { status: 404 },
+      )
+    }
+
+    // Valor enviado ou o atual quando omitido; null remove a promoção
+    const effectivePrice = parsed.data.priceCents ?? current.priceCents
+    const effectivePromo =
+      parsed.data.promoPriceCents === undefined
+        ? current.promoPriceCents
+        : parsed.data.promoPriceCents
+
+    if (!isPromoPriceValid(effectivePrice, effectivePromo)) {
+      return NextResponse.json(
+        { error: 'Preço promocional deve ser menor que o preço normal' },
         { status: 400 },
       )
     }

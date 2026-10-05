@@ -171,8 +171,19 @@ Modelagem que deve ser preservada:
 2. `POST …/upload-url` devolve URL assinada (5 min) e a `key`.
 3. `PUT` direto no R2 com a URL assinada (o arquivo não passa pelo servidor).
 4. `POST` registra a imagem no banco com a `key`.
-   Produto: cria o `Product`, depois sobe cada imagem em sequência. Exclusão remove do R2 e do banco.
+   Produto: nasce com `active: false`, sobe cada imagem em sequência e só no fim é ativado (detalhes em "Produtos: regras de escrita"). Exclusão: ver a mesma seção.
    CORS do bucket: `localhost:3000` e os domínios de produção. Previews da Vercel ficam de fora por decisão.
+
+---
+
+## Produtos: regras de escrita
+
+- Criação: o `POST` cria o produto com `active: false`. O formulário sobe cada imagem em sequência (comprimir, `upload-url`, `PUT`, registrar), checa `res.ok` em cada etapa e só no fim ativa com `PATCH { active: true }`. Se qualquer etapa falhar na criação, chama `DELETE` no produto (melhor esforço) e mantém o formulário preenchido para uma nova tentativa.
+- Edição: falha parcial de imagem não desfaz nada. O formulário limpa a seleção de arquivos para um novo envio não duplicar o que já entrou.
+- O `PATCH` valida a promoção contra o preço efetivo (valor enviado ou o atual) com `isPromoPriceValid` (`server/product-pricing.ts`). Distinguir "omitido" de `null` com `=== undefined`, nunca com `??`: `promoPriceCents: null` remove a promoção.
+- `updateProductSchema` não pode aplicar `.default([])` em `tags`. O `.partial()` mantém o default, e um `PATCH` sem `tags` apagaria as tags do produto.
+- Exclusão (produto, imagem de produto e imagem de galeria): apaga o registro no banco primeiro e o objeto no R2 depois. Falha do R2 não vira erro de resposta: `console.error` com a `key` (objeto órfão).
+- Botões de reordenação ficam desabilitados da requisição até o `router.refresh()` terminar.
 
 ---
 
@@ -200,7 +211,7 @@ Modelagem que deve ser preservada:
 
 - **Não fazer commit nem push.** Quem controla o git é o desenvolvedor.
 - Trabalhar só nos arquivos pedidos. Não alterar `schema.prisma`, migrations, `next.config.ts`, config do commitlint, `.env*` nem dependências sem pedido explícito.
-- Ao terminar, rodar e reportar: `npx tsc --noEmit`, `npm run test:run` e `npm run build`.
+- Ao terminar, rodar e reportar: `npm run format:check`, `npm run lint`, `npx tsc --noEmit`, `npm run test:run` e `npm run build`.
 - Entregar o relatório com: arquivos alterados, resultado das checagens e uma seção **"notei mas não alterei"**.
 - Antes de afirmar que algo está protegido, testado ou corrigido, verificar no código (`grep`, leitura do arquivo, execução). Não assumir.
 - Em dúvida entre dois padrões, seguir este arquivo e sinalizar a divergência.
@@ -243,7 +254,8 @@ Documentadas em `.env.example`: `DATABASE_URL` (com `sslmode=verify-full`), `JWT
 - JWT de 7 dias sem revogação.
 - Imagens públicas pelo domínio `r2.dev`; domínio próprio exigiria mover o DNS inteiro para a Cloudflare.
 - Previews da Vercel sem CORS liberado no R2.
+- Criação de produto com falha de upload é desfeita (`DELETE`) em vez de salvar rascunho.
 
 ## Dívida técnica conhecida
 
-Itens da auditoria ainda abertos (remover daqui quando forem resolvidos): tipo `Product` redeclarado em vários componentes; `url` gravada no banco em vez da `key` do R2 (extração por `replace`); lógica de reordenação duplicada entre galeria e produto; CSP ainda não configurada; falta de testes de rotas, schemas e carrinho; `error.tsx` / `not-found.tsx` ausentes.
+Itens da auditoria ainda abertos (remover daqui quando forem resolvidos): tipo `Product` redeclarado em vários componentes; `url` gravada no banco em vez da `key` do R2 (extração por `replace`, e objeto órfão no R2 quando o `PUT` dá certo mas o registro da imagem falha); lógica de reordenação duplicada entre galeria e produto; sem constraint única em `order` (a troca por dois `update` a violaria no meio da operação); reordenação concorrente entre linhas diferentes; `PATCH` de produto devolve 500 se o produto for apagado entre a leitura e o update (P2025); CSP não configurada; `@import` do Material Symbols em `globals.css` (carrega CSS do Google; remover se ninguém usar `material-symbols-outlined`); testes de rotas, de componentes e do carrinho (os schemas de produto e a precificação já têm testes).
