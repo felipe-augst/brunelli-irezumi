@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { revalidateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/require-admin'
 import { parseJsonBody } from '@/lib/parse-json-body'
+import { getPricingIssueMessage } from '@/server/product-pricing'
 
 export async function POST(request: Request) {
   const admin = await requireAdmin()
@@ -20,8 +21,11 @@ export async function POST(request: Request) {
     const parsed = createProductSchema.safeParse(body)
 
     if (!parsed.success) {
+      // Só as regras de preço têm mensagem própria em pt-BR; o resto do Zod
+      // nunca vai para o cliente
+      const pricingMessage = getPricingIssueMessage(parsed.error.issues)
       return NextResponse.json(
-        { error: 'Dados do produto inválidos' },
+        { error: pricingMessage ?? 'Dados do produto inválidos' },
         { status: 400 },
       )
     }
