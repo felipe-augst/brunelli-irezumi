@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { getPricingError, isPromoPriceValid } from './product-pricing'
+import {
+  getPricingError,
+  getPricingIssueMessage,
+  isPromoPriceValid,
+} from './product-pricing'
 
 describe('getPricingError', () => {
   it('aceita produto com preço e sem promoção', () => {
@@ -97,5 +101,25 @@ describe('isPromoPriceValid', () => {
 
   it('é inválido quando a promoção é maior que o preço', () => {
     expect(isPromoPriceValid(10000, 12000)).toBe(false)
+  })
+})
+
+describe('getPricingIssueMessage', () => {
+  it('devolve a mensagem de issue custom em campo de preço', () => {
+    expect(
+      getPricingIssueMessage([
+        { code: 'custom', path: ['tags'], message: 'Marque a tag Promoção' },
+      ]),
+    ).toBe('Marque a tag Promoção')
+  })
+
+  it('ignora issue custom fora dos campos de preço e issues que não são custom', () => {
+    expect(
+      getPricingIssueMessage([
+        { code: 'custom', path: ['title'], message: 'outro refine' },
+        { code: 'too_small', path: ['promoPriceCents'], message: 'Too small' },
+        { code: 'custom', path: [], message: 'sem caminho' },
+      ]),
+    ).toBeNull()
   })
 })
