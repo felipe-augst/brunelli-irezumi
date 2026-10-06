@@ -1,9 +1,36 @@
+import type { Metadata } from 'next'
 import { getProducts } from '@/lib/products'
+import { SITE_URL } from '@/data/site'
 import { ProductGrid } from '@/components/shop/ProductGrid'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { CartReconciler } from '@/components/shop/CartReconciler'
 import Image from 'next/image'
+
+const DESCRIPTION = 'Produtos feitos a mão por Felipe Brunelli.'
+
+export const metadata: Metadata = {
+  title: 'Loja',
+  description: DESCRIPTION,
+  alternates: {
+    canonical: '/loja',
+  },
+  openGraph: {
+    title: 'Loja | Brunelli Irezumi',
+    description: DESCRIPTION,
+    url: `${SITE_URL}/loja`,
+    // O Next substitui o openGraph do layout raiz por inteiro: repetir o resto.
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: 'Brunelli Irezumi',
+    images: [
+      {
+        url: `${SITE_URL}/images/services/shop1000p.webp`,
+        alt: 'Loja Brunelli Irezumi',
+      },
+    ],
+  },
+}
 
 export default async function LojaPage() {
   const products = await getProducts()
