@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import { buildCspReportOnly } from './src/lib/csp'
 
 const nextConfig: NextConfig = {
   images: {
@@ -38,6 +39,13 @@ const nextConfig: NextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
+          },
+          {
+            key: 'Content-Security-Policy-Report-Only',
+            value: buildCspReportOnly(
+              process.env.NODE_ENV !== 'production',
+              process.env.R2_PUBLIC_URL,
+            ),
           },
         ],
       },
