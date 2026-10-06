@@ -267,7 +267,15 @@ Documentadas em `.env.example`: `DATABASE_URL` (com `sslmode=verify-full`), `JWT
 
 ## Dívida técnica conhecida
 
-Itens da auditoria ainda abertos (remover daqui quando forem resolvidos): tipo `Product` redeclarado em vários componentes; `url` gravada no banco em vez da `key` do R2 (extração por `replace`, e objeto órfão no R2 quando o `PUT` dá certo mas o registro da imagem falha); lógica de reordenação duplicada entre galeria e produto; sem constraint única em `order` (a troca por dois `update` a violaria no meio da operação); reordenação concorrente entre linhas diferentes; `PATCH` de produto devolve 500 se o produto for apagado entre a leitura e o update (P2025); sem limite de tamanho no `upload-url` (exige mudar `lib/r2.ts`); CSP não configurada; o `eslint.config.mjs` não tem `ignores` (`eslint .` varre `.next`); testes de rotas, de componentes e do proxy (schemas de produto, precificação e carrinho já têm testes).
+Cada item tem issue aberta no GitHub (remover daqui quando a issue fechar):
+
+- Tipo `Product` redeclarado em `ProductCard` e `ProductGrid`, com mapper e `orderBy` (#62); enums do Zod, tipos `GalleryImage` e nomes de `auth` (#65); labels e mapas de categoria duplicados (#64).
+- `url` gravada no banco em vez da `key` do R2, com extração por `replace` nas rotas de exclusão (#63); objeto órfão no R2 quando o `PUT` dá certo mas o registro da imagem falha (#59).
+- Lógica de reordenação duplicada entre galeria e produto (#61); sem constraint única em `order` e reordenação concorrente (#60).
+- `PATCH` de produto devolve 500 se o produto for apagado entre a leitura e o update, P2025 (#56).
+- CSP só em modo Report-Only, sem enforcement (#106, #107).
+- Validação de variáveis de ambiente no boot (#78); `eslint.config.mjs` sem `ignores` (#41).
+- Testes ausentes: comportamento das rotas (#74), `lib/products`, `lib/gallery` e schemas de galeria e login (#75), componentes da loja e do carrinho (#76), `requireAdmin` com token válido, expirado e adulterado (#86).
 
 ## Agent skills
 
