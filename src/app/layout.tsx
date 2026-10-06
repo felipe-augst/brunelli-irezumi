@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import { Epilogue, Manrope } from 'next/font/google'
-import { cookies } from 'next/headers'
 import { Skeleton } from '@/components/layout/Skeleton'
 import { CartProvider } from '@/components/shop/CartProvider'
 import { SITE_URL } from '@/data/site'
+import { SKELETON_HEAD_SCRIPT } from '@/lib/skeleton-cookie'
 import './globals.css'
 
 const epilogue = Epilogue({
@@ -125,17 +125,18 @@ const localBusinessJsonLd = {
   },
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const cookieStore = await cookies()
-  const skeletonShown = cookieStore.get('skeleton_shown')?.value === '1'
-
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR" className="dark" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: SKELETON_HEAD_SCRIPT }} />
+        <noscript>
+          <style>{'[data-skeleton]{display:none}'}</style>
+        </noscript>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -144,7 +145,7 @@ export default async function RootLayout({
         />
       </head>
       <body className={`${epilogue.variable} ${manrope.variable} font-body`}>
-        <Skeleton initialShown={skeletonShown} />
+        <Skeleton />
         <CartProvider>{children}</CartProvider>
       </body>
     </html>

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { cn } from '@/lib/utils'
-import { markSkeletonShown } from '@/actions/skeleton'
+import { buildSkeletonCookie, hasSkeletonCookie } from '@/lib/skeleton-cookie'
 
 const GREETINGS = [
   { welcome: 'ブ' },
@@ -11,22 +11,37 @@ const GREETINGS = [
   { welcome: 'リ' },
 ]
 
-type SkeletonProps = {
-  initialShown: boolean
-}
+// Cookie não emite evento: o valor só é relido a cada render.
+const subscribeNoop = () => () => {}
 
-export function Skeleton({ initialShown }: SkeletonProps) {
-  const [faded, setFaded] = useState(false)
+// O overlay sempre vai no HTML estático. Na segunda visita do dia, o script do
+// <head> (ver layout.tsx) marca o <html> e o CSS esconde o overlay antes da
+// pintura; aqui só evitamos animar e regravar o cookie.
+export function Skeleton() {
+  const [fadedByTimer, setFaded] = useState(false)
   const [index, setIndex] = useState(0)
+  // Servidor e hidratação veem false; depois do mount vale o cookie real.
+  const alreadySeen = useSyncExternalStore(
+    subscribeNoop,
+    () => hasSkeletonCookie(document.cookie),
+    () => false,
+  )
+  // Com o cookie presente o overlay some mesmo se o script do <head> não
+  // tiver marcado o <html>.
+  const faded = fadedByTimer || alreadySeen
 
   useEffect(() => {
+    if (alreadySeen) return
+
     const languageInterval = setInterval(() => {
       setIndex((prev) => (prev + 1) % GREETINGS.length)
     }, 250)
 
     const fadeTimer = setTimeout(() => {
       setFaded(true)
-      void markSkeletonShown()
+      document.cookie = buildSkeletonCookie({
+        secure: window.location.protocol === 'https:',
+      })
       clearInterval(languageInterval)
     }, 3000)
 
@@ -34,15 +49,14 @@ export function Skeleton({ initialShown }: SkeletonProps) {
       clearInterval(languageInterval)
       clearTimeout(fadeTimer)
     }
-  }, [])
-
-  if (initialShown) return null
+  }, [alreadySeen])
 
   const currentGreeting = GREETINGS[index]
   if (!currentGreeting) return null
 
   return (
     <div
+      data-skeleton
       aria-hidden="true"
       className={cn(
         'fixed inset-0 z-100',

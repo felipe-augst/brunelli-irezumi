@@ -250,7 +250,7 @@ Antes de abrir PR: `format:check` → `lint` → `typecheck` → `test:run` → 
 
 ## Variáveis de ambiente
 
-Documentadas em `.env.example`: `DATABASE_URL` (com `sslmode=verify-full`), `JWT_SECRET`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (esta só para o seed). O mesmo conjunto precisa existir na Vercel. O CI usa uma `DATABASE_URL` fictícia no próprio workflow (o build não consulta o banco) e só o secret `JWT_SECRET`.
+Documentadas em `.env.example`: `DATABASE_URL` (com `sslmode=verify-full`), `JWT_SECRET`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (esta só para o seed). O mesmo conjunto precisa existir na Vercel. O CI sobe um Postgres descartável (service container) com `DATABASE_URL` no próprio workflow e aplica as migrations antes do `build`, porque as páginas estáticas leem o banco ao pré-renderizar. Só o secret `JWT_SECRET` é usado.
 
 ---
 
