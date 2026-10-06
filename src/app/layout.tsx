@@ -118,11 +118,6 @@ const localBusinessJsonLd = {
     opens: '10:00',
     closes: '20:00',
   },
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.9',
-    reviewCount: '53',
-  },
 }
 
 export default function RootLayout({
