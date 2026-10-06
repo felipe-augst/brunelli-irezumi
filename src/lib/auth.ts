@@ -19,13 +19,19 @@ export async function signToken(payload: TokenPayload) {
     .sign(secret)
 }
 
-export async function verifyToken(token: string): Promise<TokenPayload | null> {
+type VerifiedToken = TokenPayload & {
+  iat: number | undefined
+}
+
+export async function verifyToken(
+  token: string,
+): Promise<VerifiedToken | null> {
   try {
     const { payload } = await jwtVerify(token, secret, {
       algorithms: ['HS256'],
     })
     if (typeof payload.sub !== 'string') return null
-    return { sub: payload.sub }
+    return { sub: payload.sub, iat: payload.iat }
   } catch {
     return null
   }
