@@ -13,7 +13,7 @@ type Product = {
   id: string
   title: string
   description: string
-  priceCents: number
+  priceCents: number | null
   promoPriceCents: number | null
   category: string
   tags: string[]
@@ -30,6 +30,10 @@ export function ProductCard({ product, onOpenImage }: ProductCardProps) {
   const coverImage = product.images[0]
   const isSoldOut = product.tags.includes('SOLD_OUT')
   const badgeTag = isSoldOut ? 'SOLD_OUT' : product.tags[0]
+  const { priceCents } = product
+  // Sem preço (só sob encomenda): o valor é combinado pelo WhatsApp
+  const isInquiry =
+    product.tags.includes('MADE_TO_ORDER') || priceCents === null
 
   return (
     <div className="group border-accent/20 flex min-w-0 flex-col gap-1 self-stretch border">
@@ -98,14 +102,14 @@ export function ProductCard({ product, onOpenImage }: ProductCardProps) {
           <p className="text-on-surface-variant mt-auto text-end text-sm">
             Indisponível no momento
           </p>
-        ) : product.tags.includes('MADE_TO_ORDER') ? (
+        ) : isInquiry ? (
           <p className="text-accent font-headline mt-auto text-end text-sm tracking-wide uppercase">
             Valor a consultar
           </p>
         ) : product.promoPriceCents ? (
           <div className="mt-auto flex flex-col items-end gap-3">
             <p className="text-on-surface-variant/40 text-sm line-through">
-              {formatCentsToBRL(product.priceCents)}
+              {formatCentsToBRL(priceCents)}
             </p>
             <p className="text-accent font-headline text-lg font-bold">
               {formatCentsToBRL(product.promoPriceCents)}
@@ -113,7 +117,7 @@ export function ProductCard({ product, onOpenImage }: ProductCardProps) {
           </div>
         ) : (
           <p className="text-accent font-headline mt-auto text-end text-lg font-bold">
-            {formatCentsToBRL(product.priceCents)}
+            {formatCentsToBRL(priceCents)}
           </p>
         )}
         <button
@@ -124,7 +128,7 @@ export function ProductCard({ product, onOpenImage }: ProductCardProps) {
           aria-disabled={isSoldOut}
           onClick={() => {
             if (isSoldOut) return
-            if (!canAddToCart(product.tags)) {
+            if (priceCents === null || !canAddToCart(product.tags)) {
               window.open(
                 buildWhatsAppUrl(
                   WHATSAPP_URL,
@@ -137,7 +141,7 @@ export function ProductCard({ product, onOpenImage }: ProductCardProps) {
             addItem({
               productId: product.id,
               title: product.title,
-              priceCents: product.priceCents,
+              priceCents,
               promoPriceCents: product.promoPriceCents,
               quantity: 1,
               imageUrl: coverImage?.url ?? null,
@@ -146,7 +150,7 @@ export function ProductCard({ product, onOpenImage }: ProductCardProps) {
         >
           {isSoldOut
             ? 'Esgotado'
-            : product.tags.includes('MADE_TO_ORDER')
+            : isInquiry
               ? 'Consultar pelo WhatsApp'
               : 'Adicionar ao carrinho'}
         </button>

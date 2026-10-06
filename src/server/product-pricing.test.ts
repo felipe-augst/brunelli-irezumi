@@ -1,5 +1,82 @@
 import { describe, expect, it } from 'vitest'
-import { isPromoPriceValid } from './product-pricing'
+import { getPricingError, isPromoPriceValid } from './product-pricing'
+
+describe('getPricingError', () => {
+  it('aceita produto com preço e sem promoção', () => {
+    expect(getPricingError({ priceCents: 10000, tags: [] })).toBeNull()
+  })
+
+  it('exige preço quando o produto não é sob encomenda', () => {
+    expect(getPricingError({ priceCents: null, tags: ['LIMITED'] })).toEqual({
+      field: 'priceCents',
+      message: 'Preço é obrigatório',
+    })
+    expect(getPricingError({ priceCents: undefined, tags: [] })?.field).toBe(
+      'priceCents',
+    )
+  })
+
+  it('aceita sob encomenda sem preço', () => {
+    expect(
+      getPricingError({ priceCents: null, tags: ['MADE_TO_ORDER'] }),
+    ).toBeNull()
+  })
+
+  it('aceita sob encomenda com preço de referência', () => {
+    expect(
+      getPricingError({ priceCents: 10000, tags: ['MADE_TO_ORDER'] }),
+    ).toBeNull()
+  })
+
+  it('rejeita promoção em produto sob encomenda', () => {
+    expect(
+      getPricingError({
+        priceCents: 10000,
+        promoPriceCents: 8000,
+        tags: ['MADE_TO_ORDER', 'ON_SALE'],
+      })?.field,
+    ).toBe('promoPriceCents')
+  })
+
+  it('rejeita promoção maior ou igual ao preço', () => {
+    expect(
+      getPricingError({
+        priceCents: 10000,
+        promoPriceCents: 10000,
+        tags: ['ON_SALE'],
+      }),
+    ).toEqual({
+      field: 'promoPriceCents',
+      message: 'Preço promocional deve ser menor que o preço normal',
+    })
+  })
+
+  it('rejeita promoção sem a tag ON_SALE', () => {
+    expect(
+      getPricingError({ priceCents: 10000, promoPriceCents: 8000, tags: [] }),
+    ).toEqual({
+      field: 'tags',
+      message: 'Marque a tag Promoção ao definir um preço promocional',
+    })
+  })
+
+  it('rejeita a tag ON_SALE sem promoção', () => {
+    expect(getPricingError({ priceCents: 10000, tags: ['ON_SALE'] })).toEqual({
+      field: 'promoPriceCents',
+      message: 'A tag Promoção exige um preço promocional',
+    })
+  })
+
+  it('aceita promoção válida com a tag ON_SALE', () => {
+    expect(
+      getPricingError({
+        priceCents: 10000,
+        promoPriceCents: 8000,
+        tags: ['ON_SALE'],
+      }),
+    ).toBeNull()
+  })
+})
 
 describe('isPromoPriceValid', () => {
   it('é válido sem promoção (null)', () => {

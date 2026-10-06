@@ -5,7 +5,8 @@ export const MAX_CART_QUANTITY = 99
 export type CatalogProduct = {
   id: string
   title: string
-  priceCents: number
+  // null só em produto sob encomenda, que nunca entra no carrinho
+  priceCents: number | null
   promoPriceCents: number | null
   tags: readonly string[]
   imageUrl: string | null
@@ -127,7 +128,11 @@ export function reconcileCart(
 
   for (const item of items) {
     const product = byId.get(item.productId)
-    if (!product || !canAddToCart(product.tags)) {
+    if (
+      !product ||
+      product.priceCents === null ||
+      !canAddToCart(product.tags)
+    ) {
       changed = true
       continue
     }
