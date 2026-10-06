@@ -17,9 +17,25 @@ jobs:
   ci:
     name: Format · Lint · Typecheck · Build
     runs-on: ubuntu-latest
+    # Banco descartável só para o build: as páginas estáticas (/, /loja,
+    # /servicos/*) consultam o banco ao pré-renderizar. Vazio, sem segredo e
+    # sem relação com a produção (por isso sslmode=disable).
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
-      # URL fictícia: o CI não acessa banco (o build não consulta e o prisma generate só lê a variável)
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?sslmode=verify-full
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?sslmode=disable
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
     steps:
@@ -46,6 +62,9 @@ jobs:
 
       - name: Test
         run: npm run test:run
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy
 
       - name: Build
         run: npm run build
