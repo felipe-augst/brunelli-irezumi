@@ -1,5 +1,5 @@
 export type GalleryImage = {
-  id: number
+  id: string
   src: string
   alt: string
   span?: 'row' | 'col' | 'none'
@@ -15,11 +15,6 @@ export type ServiceCard = {
     src: string
     alt: string
   }
-  gallery: {
-    id: number
-    src: string
-    alt: string
-  }[]
 }
 
 export type NavLink = {

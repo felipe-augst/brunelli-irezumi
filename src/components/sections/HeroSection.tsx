@@ -12,7 +12,7 @@ export function HeroSection() {
     >
       {/* Background image */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 z-10 bg-linear-to-l from-transparent via-[#131313]/60 to-[#131313]" />
+        <div className="via-surface/60 to-surface absolute inset-0 z-10 bg-linear-to-l from-transparent" />
         <Image
           src={HERO_IMG_CONTENT.src}
           alt={HERO_IMG_CONTENT.alt}
@@ -30,14 +30,14 @@ export function HeroSection() {
               <ShimmerText variant="night" className="block">
                 Tatuagem Japonesa <br />
               </ShimmerText>
-              <span className="text-orange-500 lg:tracking-widest">
+              <span className="text-accent lg:tracking-widest">
                 伝統を尊重する
               </span>
             </h1>
           </RevealOnScroll>
 
           <RevealOnScroll delay={0.2}>
-            <p className="text-on-background font-body mb-10 max-w-xl pl-2 text-start text-lg leading-relaxed tracking-wide uppercase md:text-xl">
+            <p className="text-on-surface font-body mb-10 max-w-xl pl-2 text-start text-lg leading-relaxed tracking-wide uppercase md:text-xl">
               Respeito à tradição.
             </p>
           </RevealOnScroll>
@@ -48,7 +48,7 @@ export function HeroSection() {
                 href={WHATSAPP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-headline text-primary flex items-center gap-3 border border-orange-500/80 px-8 py-5 text-lg font-black tracking-widest uppercase transition-all hover:scale-105 active:scale-95"
+                className="font-headline text-primary border-accent/80 flex items-center gap-3 border px-8 py-5 text-lg font-black tracking-widest uppercase transition-all hover:scale-105 active:scale-95"
               >
                 Solicitar Orçamento
               </Link>

@@ -51,7 +51,7 @@ export function Skeleton({ initialShown }: SkeletonProps) {
         faded ? 'pointer-events-none opacity-0' : 'opacity-100',
       )}
     >
-      <div className="font-body flex flex-col items-center text-center text-5xl font-light tracking-[0.03em] text-orange-500 md:text-7xl">
+      <div className="font-body text-accent flex flex-col items-center text-center text-5xl font-light tracking-[0.03em] md:text-7xl">
         <div key={index} className="animate-fade-in">
           {currentGreeting.welcome}{' '}
         </div>

@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+enum ProductTag {
+    MADE_TO_ORDER
+    LIMITED
+    SOLD_OUT
+    ON_SALE
+}
+
+enum GalleryCategory {
+    PORTFOLIO
+    PAINTING
+    COVERUP
+}
+
+enum ProductCategory {
+    DRAWING
+    PRINT
+    TENUGUI
+    SOCKS
+    ECOBAG
+    CUSTOM
+}
+
+model AdminUser {
+    id           String   @id @default(cuid())
+    email        String   @unique
+    passwordHash String
+    failedAttempts Int       @default(0)
+    lockedUntil    DateTime?
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt 
+}
+
+model Product {
+    id              String        @id @default(cuid())
+    title           String
+    description     String
+    priceCents      Int
+    promoPriceCents Int?
+    category        ProductCategory
+    tags            ProductTag[]
+    active          Boolean       @default(true)
+    images          ProductImage[]
+    createdAt       DateTime      @default(now())
+    updatedAt       DateTime      @updatedAt
+}
+
+model ProductImage {
+    id        String   @id @default(cuid())
+    url       String
+    order     Int
+    product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+    productId String
+}
+
+model GalleryImage {
+    id        String          @id @default(cuid())
+    url       String
+    category  GalleryCategory
+    order     Int
+    createdAt DateTime        @default(now())
+}

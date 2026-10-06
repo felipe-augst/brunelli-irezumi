@@ -7,8 +7,11 @@ import { Cta } from '@/components/sections/Cta'
 import { LocationSection } from '@/components/sections/LocationSection'
 import { Footer } from '@/components/layout/Footer'
 import { RevealOnScroll } from '@/components/ui/RevealOnScroll'
+import { getGalleryImages } from '@/lib/gallery'
 
-export default function Home() {
+export default async function Home() {
+  const portfolioImages = await getGalleryImages('PORTFOLIO')
+
   return (
     <>
       <Header />
@@ -23,7 +26,7 @@ export default function Home() {
           <ServicesSection />
         </RevealOnScroll>
         <RevealOnScroll delay={0.4}>
-          <GallerySection />
+          <GallerySection images={portfolioImages} />
         </RevealOnScroll>
         <RevealOnScroll delay={0.5}>
           <Cta />

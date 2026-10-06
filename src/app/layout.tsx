@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Epilogue, Manrope } from 'next/font/google'
 import { cookies } from 'next/headers'
 import { Skeleton } from '@/components/layout/Skeleton'
+import { CartProvider } from '@/components/shop/CartProvider'
 import './globals.css'
 
 const epilogue = Epilogue({
@@ -143,7 +144,7 @@ export default async function RootLayout({
       </head>
       <body className={`${epilogue.variable} ${manrope.variable} font-body`}>
         <Skeleton initialShown={skeletonShown} />
-        {children}
+        <CartProvider>{children}</CartProvider>
       </body>
     </html>
   )

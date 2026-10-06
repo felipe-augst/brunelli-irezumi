@@ -6,9 +6,16 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import type { Metadata } from 'next'
 import { GalleryGrid } from '@/components/ui/GalleryGrid'
+import { getGalleryImages } from '@/lib/gallery'
+import type { GalleryCategory } from '@/generated/prisma/client'
 
 type Props = {
   params: Promise<{ slug: string }>
+}
+
+const SLUG_TO_CATEGORY: Record<string, GalleryCategory> = {
+  tradicional: 'PAINTING',
+  coverup: 'COVERUP',
 }
 
 export async function generateStaticParams() {
@@ -43,6 +50,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ServicePage({ params }: Props) {
   const { slug } = await params
   const service = SERVICES.find((s) => s.slug === slug)
+  const category = SLUG_TO_CATEGORY[slug]
+  const images = category ? await getGalleryImages(category) : []
 
   if (!service) notFound()
 
@@ -50,7 +59,7 @@ export default async function ServicePage({ params }: Props) {
     <>
       <Header />
       <main className="bg-surface min-h-dvh pt-24 pb-24">
-        <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-7xl">
           {/* Hero do serviço */}
           <div className="relative mb-16 aspect-16/6 overflow-hidden">
             <Image
@@ -64,20 +73,20 @@ export default async function ServicePage({ params }: Props) {
             />
             <div className="from-surface absolute inset-0 bg-linear-to-t via-transparent to-transparent" />
             <div className="absolute bottom-0 flex w-full items-center justify-center p-8">
-              <h1 className="font-headline border-b border-orange-500/60 text-4xl font-black tracking-widest uppercase md:text-7xl">
+              <h1 className="font-headline border-accent/60 border-b text-4xl font-black tracking-widest uppercase md:text-7xl">
                 {service.title}
               </h1>
             </div>
           </div>
 
           {/* Grid de imagens */}
-          <GalleryGrid images={service.gallery} />
+          <GalleryGrid images={images} />
 
           {/* CTA */}
-          <div className="border-outline-variant/20 mt-16 flex flex-col justify-between gap-6 border-t pt-12 sm:flex-row md:items-center">
+          <div className="border-outline-variant/20 mt-16 flex flex-col justify-between gap-6 border-t px-6 pt-12 sm:flex-row md:items-center">
             <Link
               href="/#servicos"
-              className="font-headline hover:text-secondary text-sm tracking-widest text-orange-500 uppercase transition-colors"
+              className="font-headline hover:text-secondary text-accent text-sm tracking-widest uppercase transition-colors"
             >
               ← Voltar
             </Link>
@@ -85,7 +94,7 @@ export default async function ServicePage({ params }: Props) {
               href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-headline text-primary gap-3 border border-orange-500/80 px-8 py-5 text-center text-lg font-black tracking-widest uppercase transition-all hover:scale-105 active:scale-95"
+              className="font-headline text-primary border-accent/80 gap-3 border px-8 py-5 text-center text-lg font-black tracking-widest uppercase transition-all hover:scale-105 active:scale-95"
             >
               Solicitar Orçamento
             </Link>

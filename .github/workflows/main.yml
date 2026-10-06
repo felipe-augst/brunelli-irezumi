@@ -3,9 +3,9 @@ name: CI
 # Roda em todo push e PR para a branch main
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 # Cancela runs anteriores do mesmo PR/branch ainda em andamento
 # Evita desperdício de minutos do GitHub Actions
@@ -17,6 +17,9 @@ jobs:
   ci:
     name: Format · Lint · Typecheck · Build
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
     steps:
       - name: Checkout

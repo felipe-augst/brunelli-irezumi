@@ -25,7 +25,7 @@ export function Footer() {
           </h2>
           <p className="font-body text-on-surface/90 mb-4 max-w-xs text-center text-sm leading-relaxed">
             Eterno estudante da{' '}
-            <strong className="text-orange-500">tatuagem japonesa</strong>
+            <strong className="text-accent">tatuagem japonesa</strong>
           </p>
           ブ<br />ル<br />ネ<br />リ
         </div>
@@ -39,7 +39,7 @@ export function Footer() {
         <div className="grid w-full grid-cols-2 gap-8 md:col-span-6">
           {/* Coluna Menu */}
           <div className="flex flex-col items-center md:items-start">
-            <h3 className="font-headline mb-6 text-xs font-bold tracking-widest text-orange-500 uppercase">
+            <h3 className="font-headline text-accent mb-6 text-xs font-bold tracking-widest uppercase">
               Navegação
             </h3>
             <ul className="space-y-4 text-center md:text-left">
@@ -58,7 +58,7 @@ export function Footer() {
 
           {/* Coluna Social */}
           <div className="flex flex-col items-center md:items-start">
-            <h3 className="font-headline mb-6 text-xs font-bold tracking-widest text-orange-500 uppercase">
+            <h3 className="font-headline text-accent mb-6 text-xs font-bold tracking-widest uppercase">
               Social
             </h3>
             <ul className="space-y-4 text-center md:text-left">

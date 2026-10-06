@@ -36,7 +36,7 @@ export function GalleryGrid({ images }: GalleryGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-0.5 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-0.5 px-3 md:grid-cols-3 lg:grid-cols-4 lg:px-6">
         {images.map((image, index) => (
           <button
             key={image.id}

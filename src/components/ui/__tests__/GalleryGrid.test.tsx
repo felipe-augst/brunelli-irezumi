@@ -4,9 +4,9 @@ import { GalleryGrid } from '../GalleryGrid'
 import type { GalleryImage } from '@/types'
 
 const MOCK_IMAGES: GalleryImage[] = [
-  { id: 1, src: '/img/foto1.webp', alt: 'Foto 1' },
-  { id: 2, src: '/img/foto2.webp', alt: 'Foto 2' },
-  { id: 3, src: '/img/foto3.webp', alt: 'Foto 3' },
+  { id: '1', src: '/img/foto1.webp', alt: 'Foto 1' },
+  { id: '2', src: '/img/foto2.webp', alt: 'Foto 2' },
+  { id: '3', src: '/img/foto3.webp', alt: 'Foto 3' },
 ]
 
 describe('GalleryGrid', () => {

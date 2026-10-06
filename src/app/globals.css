@@ -1,15 +1,14 @@
 @import 'tailwindcss';
 
 @theme inline {
-  /* --- TONS DE CINZA, PRETO E BRANCO (ESTRUTURA) --- */
-  --color-background: #131313;
+  /* --- TONS DE CINZA, LARANJA, PRETO E BRANCO (ESTRUTURA) --- */
   --color-surface: #131313;
+  --color-accent: #f97316;
   --color-surface-container-low: #1c1b1b;
   --color-surface-container: #20201f;
   --color-surface-container-high: #2a2a2a;
   --color-surface-variant: #353535;
   --color-on-surface: #e5e2e1;
-  --color-on-background: #e5e2e1;
   --color-on-surface-variant: #c4c7c7;
   --color-outline-variant: #444748;
   --color-outline: #a4a4a4;

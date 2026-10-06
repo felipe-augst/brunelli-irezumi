@@ -1,6 +1,7 @@
 import { GalleryGrid } from '@/components/ui/GalleryGrid'
 import Link from 'next/link'
-import { GALLERY_IMAGES, INSTAGRAM_URL } from '@/data/projects'
+import { INSTAGRAM_URL } from '@/data/projects'
+import type { GalleryImage } from '@/types'
 
 const InstagramIcon = ({ className }: { className?: string }) => (
   <svg
@@ -19,14 +20,18 @@ const InstagramIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export function GallerySection() {
+type GallerySectionProps = {
+  images: GalleryImage[]
+}
+
+export function GallerySection({ images }: GallerySectionProps) {
   return (
     <section className="bg-surface py-12 md:py-24" id="galeria">
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-7xl">
         <div className="mb-16 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div className="bg-outline-variant/20 mx-8 hidden h-0.5 flex-1 lg:block" />
-          <div>
-            <span className="font-headline text-sm font-bold tracking-[0.3em] text-orange-500 uppercase">
+          <div className="px-3 lg:px-6">
+            <span className="font-headline text-accent text-sm font-bold tracking-[0.3em] uppercase">
               By Felipe Brunelli
             </span>
             <h2 className="font-headline mt-2 text-4xl font-black tracking-wide uppercase md:text-6xl">
@@ -35,7 +40,7 @@ export function GallerySection() {
           </div>
         </div>
 
-        <GalleryGrid images={GALLERY_IMAGES} />
+        <GalleryGrid images={images} />
 
         <div className="mt-12 flex items-center justify-center text-center">
           <Link
@@ -44,8 +49,8 @@ export function GallerySection() {
             rel="noopener noreferrer"
             className="text-on-surface font-headline inline-flex items-center gap-2 text-lg font-bold tracking-widest uppercase"
           >
-            Ver mais no <span className="text-orange-500">Instagram</span>
-            <InstagramIcon className="mb-1 h-5 w-5 text-orange-500" />
+            Ver mais no <span className="text-accent">Instagram</span>
+            <InstagramIcon className="text-accent mb-1 h-5 w-5" />
           </Link>
         </div>
       </div>

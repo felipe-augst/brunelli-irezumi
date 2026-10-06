@@ -9,7 +9,7 @@ export function MobileNav() {
         href={WHATSAPP_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="hover:text-secondary flex flex-col items-center justify-center text-orange-500 transition-all duration-300"
+        className="hover:text-secondary text-accent flex flex-col items-center justify-center transition-all duration-300"
       >
         <MessageCircleCheck size={24} />
         <span className="font-body mt-1 pt-2 text-[10px] tracking-widest uppercase">
@@ -19,7 +19,7 @@ export function MobileNav() {
 
       <Link
         href="tel:11976624286"
-        className="hover:text-secondary flex flex-col items-center justify-center text-orange-500 transition-all duration-300"
+        className="hover:text-secondary text-accent flex flex-col items-center justify-center transition-all duration-300"
       >
         <Phone size={24} />
         <span className="font-body mt-1 pt-2 text-[10px] tracking-widest uppercase">
@@ -31,7 +31,7 @@ export function MobileNav() {
         href={MAPS_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="hover:text-secondary flex flex-col items-center justify-center text-orange-500 transition-all duration-300"
+        className="hover:text-secondary text-accent flex flex-col items-center justify-center transition-all duration-300"
       >
         <MapPinned size={24} />
         <span className="font-body mt-1 pt-2 text-[10px] tracking-widest uppercase">

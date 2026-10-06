@@ -1,4 +1,4 @@
-import { SERVICES, GALLERY_IMAGES, WHATSAPP_URL } from '@/data/projects'
+import { SERVICES, WHATSAPP_URL } from '@/data/projects'
 
 describe('SERVICES', () => {
   it('todos os serviços têm campos obrigatórios', () => {
@@ -20,21 +20,6 @@ describe('SERVICES', () => {
 
   it('ids são únicos', () => {
     const ids = SERVICES.map((s) => s.id)
-    const unique = new Set(ids)
-    expect(unique.size).toBe(ids.length)
-  })
-})
-
-describe('GALLERY_IMAGES', () => {
-  it('todas as imagens têm src e alt', () => {
-    GALLERY_IMAGES.forEach((img) => {
-      expect(img.src).toBeTruthy()
-      expect(img.alt).toBeTruthy()
-    })
-  })
-
-  it('ids são únicos', () => {
-    const ids = GALLERY_IMAGES.map((img) => img.id)
     const unique = new Set(ids)
     expect(unique.size).toBe(ids.length)
   })
