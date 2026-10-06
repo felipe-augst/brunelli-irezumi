@@ -16,9 +16,7 @@ export default async function Home() {
     <>
       <Header />
       <main id="main-content">
-        <RevealOnScroll delay={0.1}>
-          <HeroSection />
-        </RevealOnScroll>
+        <HeroSection />
         <RevealOnScroll delay={0.2}>
           <AboutSection />
         </RevealOnScroll>
