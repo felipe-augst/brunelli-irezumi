@@ -250,7 +250,7 @@ Antes de abrir PR: `format:check` → `lint` → `typecheck` → `test:run` → 
 
 ## Variáveis de ambiente
 
-Documentadas em `.env.example`: `DATABASE_URL` (com `sslmode=verify-full`), `JWT_SECRET`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (esta só para o seed). O mesmo conjunto precisa existir na Vercel e nos secrets do GitHub Actions.
+Documentadas em `.env.example`: `DATABASE_URL` (com `sslmode=verify-full`), `JWT_SECRET`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (esta só para o seed). O mesmo conjunto precisa existir na Vercel. O CI usa uma `DATABASE_URL` fictícia no próprio workflow (o build não consulta o banco) e só o secret `JWT_SECRET`.
 
 ---
 
@@ -267,7 +267,7 @@ Documentadas em `.env.example`: `DATABASE_URL` (com `sslmode=verify-full`), `JWT
 
 ## Dívida técnica conhecida
 
-Itens da auditoria ainda abertos (remover daqui quando forem resolvidos): tipo `Product` redeclarado em vários componentes; `url` gravada no banco em vez da `key` do R2 (extração por `replace`, e objeto órfão no R2 quando o `PUT` dá certo mas o registro da imagem falha); lógica de reordenação duplicada entre galeria e produto; sem constraint única em `order` (a troca por dois `update` a violaria no meio da operação); reordenação concorrente entre linhas diferentes; `PATCH` de produto devolve 500 se o produto for apagado entre a leitura e o update (P2025); sem limite de tamanho no `upload-url` (exige mudar `lib/r2.ts`); CSP não configurada; o `eslint.config.mjs` não tem `ignores` (`eslint .` varre `.next`); `DATABASE_URL` com `verify-full` ainda só no `.env` local (falta Vercel e GitHub Actions); testes de rotas, de componentes e do proxy (schemas de produto, precificação e carrinho já têm testes).
+Itens da auditoria ainda abertos (remover daqui quando forem resolvidos): tipo `Product` redeclarado em vários componentes; `url` gravada no banco em vez da `key` do R2 (extração por `replace`, e objeto órfão no R2 quando o `PUT` dá certo mas o registro da imagem falha); lógica de reordenação duplicada entre galeria e produto; sem constraint única em `order` (a troca por dois `update` a violaria no meio da operação); reordenação concorrente entre linhas diferentes; `PATCH` de produto devolve 500 se o produto for apagado entre a leitura e o update (P2025); sem limite de tamanho no `upload-url` (exige mudar `lib/r2.ts`); CSP não configurada; o `eslint.config.mjs` não tem `ignores` (`eslint .` varre `.next`); `DATABASE_URL` com `verify-full` ainda só no `.env` local (falta conferir a Vercel, em Production e Preview); testes de rotas, de componentes e do proxy (schemas de produto, precificação e carrinho já têm testes).
 
 ## Agent skills
 

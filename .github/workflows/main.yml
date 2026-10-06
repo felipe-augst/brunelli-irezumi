@@ -18,7 +18,8 @@ jobs:
     name: Format · Lint · Typecheck · Build
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # URL fictícia: o CI não acessa banco (o build não consulta e o prisma generate só lê a variável)
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?sslmode=verify-full
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
     steps:
