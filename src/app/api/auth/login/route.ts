@@ -4,12 +4,12 @@ import { prisma } from '@/lib/prisma'
 import { signToken } from '@/lib/auth'
 import { loginSchema } from '@/schemas/login'
 import { isAccountLocked } from '@/server/auth'
+import {
+  DUMMY_HASH,
+  clearExpiredLock,
+  registerFailedAttempt,
+} from '@/server/login-attempts'
 import { parseJsonBody } from '@/lib/parse-json-body'
-
-const MAX_FAILED_ATTEMPTS = 5
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000
-
-const DUMMY_HASH = bcrypt.hashSync('dummy-password', 10)
 
 export async function POST(req: Request) {
   const body = await parseJsonBody(req)
@@ -47,13 +47,7 @@ export async function POST(req: Request) {
       )
     }
 
-    if (adminUser.lockedUntil) {
-      await prisma.adminUser.update({
-        where: { id: adminUser.id },
-        data: { failedAttempts: 0, lockedUntil: null },
-      })
-      adminUser.failedAttempts = 0
-    }
+    await clearExpiredLock(adminUser)
 
     const isPasswordValid = await bcrypt.compare(
       password,
@@ -61,17 +55,7 @@ export async function POST(req: Request) {
     )
 
     if (!isPasswordValid) {
-      const updated = await prisma.adminUser.update({
-        where: { id: adminUser.id },
-        data: { failedAttempts: { increment: 1 } },
-      })
-
-      if (updated.failedAttempts >= MAX_FAILED_ATTEMPTS) {
-        await prisma.adminUser.update({
-          where: { id: adminUser.id },
-          data: { lockedUntil: new Date(Date.now() + LOCKOUT_DURATION_MS) },
-        })
-      }
+      await registerFailedAttempt(adminUser.id)
 
       return NextResponse.json(
         { error: 'Credenciais inválidas' },

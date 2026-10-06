@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { requireAdminPage } from '@/lib/require-admin-page'
 import Image from 'next/image'
 import { formatCentsToBRL } from '@/lib/format-currency'
 import { DeleteProductButton } from '@/components/admin/products/DeleteProductButton'
@@ -23,6 +24,7 @@ export default async function EditProductPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  await requireAdminPage()
   const { id } = await params
   const product = await prisma.product.findUnique({
     where: { id },

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ProductForm } from '@/components/admin/products/ProductForm'
 import { prisma } from '@/lib/prisma'
+import { requireAdminPage } from '@/lib/require-admin-page'
 import Image from 'next/image'
 import { formatCentsToBRL } from '@/lib/format-currency'
 import { DeleteProductButton } from '@/components/admin/products/DeleteProductButton'
@@ -17,6 +18,8 @@ export const metadata: Metadata = {
 }
 
 export default async function ProductsPage() {
+  await requireAdminPage()
+
   const products = await prisma.product.findMany({
     include: {
       images: {

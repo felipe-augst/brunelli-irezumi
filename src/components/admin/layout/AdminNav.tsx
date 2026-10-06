@@ -32,6 +32,12 @@ export function AdminNav() {
       >
         Loja
       </Link>
+      <Link
+        href="/admin/password"
+        className={`text-sm ${pathname === '/admin/password' ? 'text-accent' : 'text-on-surface-variant hover:text-accent'}`}
+      >
+        Senha
+      </Link>
     </nav>
   )
 }

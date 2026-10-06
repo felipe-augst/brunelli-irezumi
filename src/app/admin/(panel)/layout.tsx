@@ -1,16 +1,19 @@
 import type { Metadata } from 'next'
 import { LogoutButton } from '@/components/admin/auth/LogoutButton'
 import { AdminNav } from '@/components/admin/layout/AdminNav'
+import { requireAdminPage } from '@/lib/require-admin-page'
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  await requireAdminPage()
+
   return (
     <div className="bg-surface min-h-screen">
       <header className="border-outline-variant flex justify-between border-b px-4 py-3 text-center">
