@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 import Image from 'next/image'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useDialogA11y } from '@/hooks/useDialogA11y'
 import type { GalleryImage } from '@/types'
 
@@ -62,12 +63,10 @@ export function Lightbox({
           e.stopPropagation()
           onClose()
         }}
-        className="absolute top-4 right-4 z-10 text-white/70 transition-colors hover:text-white"
+        className="text-on-surface-variant hover:text-on-surface absolute top-4 right-4 z-10 cursor-pointer p-2 transition-colors"
         aria-label="Fechar"
       >
-        <span className="text-body cursor-pointer px-1 py-4 text-2xl text-red-600 transition-transform hover:scale-110 hover:text-red-400">
-          x
-        </span>
+        <X size={28} aria-hidden="true" />
       </button>
 
       {/* Seta anterior */}
@@ -77,10 +76,13 @@ export function Lightbox({
             e.stopPropagation()
             onPrev()
           }}
-          className="absolute top-1/2 left-2 z-10 -translate-y-1/2 p-2 text-white/70 transition-colors hover:text-white md:left-4"
+          className="absolute top-1/2 left-2 z-10 -translate-y-1/2 cursor-pointer p-2 transition-transform hover:scale-110 md:left-4"
           aria-label="Imagem anterior"
         >
-          <span className="text-accent text-4xl md:text-7xl">{'<'}</span>
+          <ChevronLeft
+            className="text-accent size-10 md:size-16"
+            aria-hidden="true"
+          />
         </button>
       )}
 
@@ -106,15 +108,18 @@ export function Lightbox({
             e.stopPropagation()
             onNext()
           }}
-          className="absolute top-1/2 right-2 z-10 -translate-y-1/2 p-2 text-white/70 transition-colors hover:text-white md:right-4"
+          className="absolute top-1/2 right-2 z-10 -translate-y-1/2 cursor-pointer p-2 transition-transform hover:scale-110 md:right-4"
           aria-label="Próxima imagem"
         >
-          <span className="text-accent text-4xl md:text-7xl">{'>'}</span>
+          <ChevronRight
+            className="text-accent size-10 md:size-16"
+            aria-hidden="true"
+          />
         </button>
       )}
 
       {/* Contador ex: 2 / 9 */}
-      <div className="font-body absolute bottom-4 text-sm tracking-widest text-white/50">
+      <div className="font-body text-on-surface-variant absolute bottom-4 text-sm tracking-widest">
         {currentIndex + 1} / {images.length}
       </div>
     </div>

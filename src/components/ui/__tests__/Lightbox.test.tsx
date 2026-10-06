@@ -231,5 +231,14 @@ describe('Lightbox', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
       expect(opener).toHaveFocus()
     })
+
+    it('os botões mantêm o aria-label e não expõem texto de ícone', () => {
+      renderOpen()
+      for (const name of ['Fechar', 'Imagem anterior', 'Próxima imagem']) {
+        const button = screen.getByRole('button', { name })
+        expect(button.textContent).toBe('')
+        expect(button.querySelector('svg')).toBeInTheDocument()
+      }
+    })
   })
 })
