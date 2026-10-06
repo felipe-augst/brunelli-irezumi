@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { requireAdminPage } from '@/lib/require-admin-page'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { GalleryUploadForm } from '@/components/admin/gallery/GalleryUploadForm'
@@ -23,6 +24,7 @@ type Props = {
 }
 
 export default async function GalleryCategoryPage({ params }: Props) {
+  await requireAdminPage()
   const { category: slug } = await params
   const category = CATEGORY_MAP[slug]
 
