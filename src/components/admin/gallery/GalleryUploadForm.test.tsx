@@ -52,6 +52,19 @@ describe('GalleryUploadForm', () => {
     vi.restoreAllMocks()
   })
 
+  it('envia o tamanho do arquivo comprimido ao pedir a URL de upload', async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({}, false, 500))
+
+    await selectAndSend()
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe('/api/admin/gallery/upload-url')
+    expect(JSON.parse(init.body as string)).toEqual({
+      contentType: 'image/webp',
+      size: 1,
+    })
+  })
+
   it('interrompe o fluxo e avisa quando o upload-url responde não-OK', async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({}, false, 500))
 

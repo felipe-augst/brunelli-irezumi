@@ -30,7 +30,10 @@ export function GalleryUploadForm({ category }: { category: GalleryCategory }) {
       const urlResponse = await fetch('/api/admin/gallery/upload-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contentType: 'image/webp' }),
+        body: JSON.stringify({
+          contentType: 'image/webp',
+          size: compressedImg.size,
+        }),
       })
       if (!urlResponse.ok) throw new Error(`${step} (${urlResponse.status})`)
       const body: unknown = await urlResponse.json()
