@@ -153,6 +153,7 @@ Modelagem que deve ser preservada:
 - Segredos são variáveis de ambiente do servidor. Nunca usar `NEXT_PUBLIC_` para segredo.
 - Upload: `upload-url` aceita só `image/webp`; as `key`s devem ter prefixo validado (`gallery/` ou `products/`). Rotas de sub-recurso confirmam que o recurso pertence ao pai (ex.: `image.productId === id`).
 - Lógica de negócio que precisa de teste fica em `src/server/` ou `src/lib/` **sem** importar `server-only` (esse import quebra o Vitest). Por isso `requireAdmin` mora em `lib/require-admin.ts` e não em `server/auth.ts`.
+- O Vitest tem dois projetos (`vitest.config.ts`): `web` (jsdom, `vitest.setup.tsx`) e `server` (node, `vitest.setup.server.ts`), que cobre `src/app/api/**/*.test.ts` e `src/proxy.test.ts`. Só o `server` stuba `server-only` e define `JWT_SECRET` de teste: teste de rota ou de proxy vai nesses caminhos.
 
 ---
 
