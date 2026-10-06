@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { SERVICES, WHATSAPP_URL } from '@/data/projects'
+import { SITE_URL } from '@/data/site'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import type { Metadata } from 'next'
@@ -36,10 +37,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${service.title} | Brunelli Irezumi`,
       description: service.description,
-      url: `https://brunelli-irezumi.com.br/servicos/${slug}`,
+      url: `${SITE_URL}/servicos/${slug}`,
       images: [
         {
-          url: `https://brunelli-irezumi.com.br${service.image.src}`,
+          url: `${SITE_URL}${service.image.src}`,
           alt: service.image.alt,
         },
       ],

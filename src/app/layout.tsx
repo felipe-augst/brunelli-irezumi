@@ -3,6 +3,7 @@ import { Epilogue, Manrope } from 'next/font/google'
 import { cookies } from 'next/headers'
 import { Skeleton } from '@/components/layout/Skeleton'
 import { CartProvider } from '@/components/shop/CartProvider'
+import { SITE_URL } from '@/data/site'
 import './globals.css'
 
 const epilogue = Epilogue({
@@ -20,7 +21,7 @@ const manrope = Manrope({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.brunelli-irezumi.com.br'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'BRUNELLI IREZUMI | Tatuagem Japonesa em Jundiaí-SP',
     template: '%s | Brunelli Irezumi',
@@ -65,11 +66,11 @@ export const metadata: Metadata = {
       'Especialista em tatuagem tradicional japonesa e coberturas em Jundiaí. Há mais de 10 anos estudando a arte oriental.',
     type: 'website',
     locale: 'pt_BR',
-    url: 'https://www.brunelli-irezumi.com.br',
+    url: SITE_URL,
     siteName: 'Brunelli Irezumi',
     images: [
       {
-        url: 'https://www.brunelli-irezumi.com.br/images/hero/hero1900p.webp',
+        url: `${SITE_URL}/images/hero/hero1900p.webp`,
         width: 1900,
         height: 1267,
         alt: 'Brunelli Irezumi — Tatuagem Japonesa Tradicional em Jundiaí-SP',
@@ -89,7 +90,7 @@ const localBusinessJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'TattooParlor',
   name: 'Brunelli Irezumi',
-  url: 'https://www.brunelli-irezumi.com.br',
+  url: SITE_URL,
   telephone: '+5511976624286',
   address: {
     '@type': 'PostalAddress',
