@@ -105,8 +105,8 @@ Regra de organização: `ui/` = reutilizável e genérico; `sections/` = composi
   | `text-on-surface` / `text-on-surface-variant` | Texto primário / secundário |
   | `border-outline-variant` | Bordas discretas |
   | `text-accent` / `bg-accent` | Laranja de destaque (`#f97316`) |
-  | `bg-secondary-container` | Vinho: ações destrutivas, erros |
-  | `text-secondary` | Rosa: hover e links |
+  | `bg-secondary-container` | Vinho: só como fundo (ações destrutivas, selos). Nunca como cor de texto ou ícone: contraste ~2,5:1 sobre `surface` |
+  | `text-secondary` | Rosa: hover, links, mensagens de erro e ícones destrutivos (≥ 4,5:1 sobre `surface`) |
 
 **Duas linguagens visuais:** o site público é editorial (bold, `uppercase`, `tracking-widest`, `font-headline`). O painel admin é compacto e utilitário (texto pequeno, `rounded-sm`, fonte discreta).
 

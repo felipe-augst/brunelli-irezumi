@@ -56,7 +56,7 @@ export function LoginForm() {
             className="border-outline-variant bg-surface-container text-on-surface focus-visible:outline-accent rounded-sm border px-3 py-2 text-sm focus-visible:outline"
           />
           {errors.email && (
-            <p role="alert" className="text-secondary-container text-xs">
+            <p role="alert" className="text-secondary text-xs">
               {errors.email.message}
             </p>
           )}
@@ -68,14 +68,14 @@ export function LoginForm() {
           </label>
           <PasswordInput id="password" {...register('password')} />
           {errors.password && (
-            <p role="alert" className="text-secondary-container text-xs">
+            <p role="alert" className="text-secondary text-xs">
               {errors.password.message}
             </p>
           )}
         </div>
 
         {serverError && (
-          <p role="alert" className="text-secondary-container text-sm">
+          <p role="alert" className="text-secondary text-sm">
             {serverError}
           </p>
         )}

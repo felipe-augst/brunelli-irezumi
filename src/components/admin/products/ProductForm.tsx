@@ -204,7 +204,7 @@ export function ProductForm({ product }: ProductFormProps) {
           className="border-outline-variant bg-surface-container text-on-surface rounded-sm border px-3 py-2 text-sm"
         />
         {errors.title && (
-          <p role="alert" className="text-secondary-container text-sm">
+          <p role="alert" className="text-secondary text-sm">
             {errors.title.message}
           </p>
         )}
@@ -224,7 +224,7 @@ export function ProductForm({ product }: ProductFormProps) {
           className="border-outline-variant bg-surface-container text-on-surface rounded-sm border px-3 py-2 text-sm"
         />
         {errors.description && (
-          <p role="alert" className="text-secondary-container text-sm">
+          <p role="alert" className="text-secondary text-sm">
             {errors.description.message}
           </p>
         )}
@@ -258,7 +258,7 @@ export function ProductForm({ product }: ProductFormProps) {
           ))}
         </select>
         {errors.category && (
-          <p role="alert" className="text-secondary-container text-sm">
+          <p role="alert" className="text-secondary text-sm">
             {errors.category.message}
           </p>
         )}
@@ -276,14 +276,14 @@ export function ProductForm({ product }: ProductFormProps) {
           </label>
         ))}
         {errors.tags && (
-          <p role="alert" className="text-secondary-container text-sm">
+          <p role="alert" className="text-secondary text-sm">
             {errors.tags.message}
           </p>
         )}
       </fieldset>
 
       {serverError && (
-        <p role="alert" className="text-secondary-container text-sm">
+        <p role="alert" className="text-secondary text-sm">
           {serverError}
         </p>
       )}

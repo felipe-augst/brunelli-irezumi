@@ -87,7 +87,7 @@ export function Footer() {
             href="https://felipeaugustodev.com.br/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-secondary-container transition-colors"
+            className="hover:text-secondary transition-colors"
           >
             Felipe Augusto
           </a>

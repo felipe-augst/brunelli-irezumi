@@ -54,7 +54,7 @@ export function ProductCard({ product, onOpenImage }: ProductCardProps) {
             sizes="(max-width: 768px) 50vw, 25vw"
           />
         )}
-        <span className="text-on-surface-variant border-accent/30 bg-surface/80 absolute top-2 left-2 rounded-full border px-3 py-1 text-xs backdrop-blur-sm">
+        <span className="text-on-surface-variant border-accent/30 bg-surface/95 absolute top-2 left-2 rounded-full border px-3 py-1 text-xs backdrop-blur-sm">
           {product.category && CATEGORY_LABELS[product.category]}
         </span>
         {badgeTag && (
@@ -63,7 +63,7 @@ export function ProductCard({ product, onOpenImage }: ProductCardProps) {
               <span className="bg-accent absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
               <span className="bg-accent relative inline-flex h-2.5 w-2.5 rounded-full" />
             </span>
-            <span className="text-on-surface bg-surface/80 rounded-full px-3 py-1 text-xs backdrop-blur-sm">
+            <span className="text-on-surface bg-surface/95 rounded-full px-3 py-1 text-xs backdrop-blur-sm">
               {TAG_LABELS[badgeTag]}
             </span>
           </div>
@@ -108,7 +108,7 @@ export function ProductCard({ product, onOpenImage }: ProductCardProps) {
           </p>
         ) : product.promoPriceCents ? (
           <div className="mt-auto flex flex-col items-end gap-3">
-            <p className="text-on-surface-variant/40 text-sm line-through">
+            <p className="text-outline text-sm line-through">
               {formatCentsToBRL(priceCents)}
             </p>
             <p className="text-accent font-headline text-lg font-bold">
