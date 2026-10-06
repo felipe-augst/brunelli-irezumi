@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import Image from 'next/image'
 import { X, Trash2 } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
+import { useDialogA11y } from '@/hooks/useDialogA11y'
 import { cartTotalCents, lineTotalCents, MAX_CART_QUANTITY } from '@/lib/cart'
 import { formatCentsToBRL } from '@/lib/format-currency'
 import { buildOrderMessage, buildWhatsAppUrl } from '@/lib/whatsapp'
@@ -13,11 +14,22 @@ export function CartDrawer() {
   const {
     items,
     isDrawerOpen,
-    toggleDrawer,
+    closeDrawer,
     removeItem,
     increaseQuantity,
     decreaseQuantity,
   } = useCart()
+
+  const panelRef = useRef<HTMLDivElement>(null)
+  const backdropRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+
+  useDialogA11y({
+    isOpen: isDrawerOpen,
+    onClose: closeDrawer,
+    containerRef: panelRef,
+    ignore: [backdropRef],
+  })
 
   useEffect(() => {
     document.body.style.overflow = isDrawerOpen ? 'hidden' : ''
@@ -32,21 +44,32 @@ export function CartDrawer() {
     <>
       {isDrawerOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/70 blur-3xl"
-          onClick={toggleDrawer}
+          ref={backdropRef}
+          aria-hidden="true"
+          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
+          onClick={closeDrawer}
         />
       )}
 
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        inert={!isDrawerOpen}
         className={`bg-surface fixed top-0 right-0 z-50 h-full w-full transition-transform duration-300 lg:w-96 ${
           isDrawerOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         <div className="border-outline-variant flex items-center justify-between border-b p-4">
-          <h2 className="font-headline text-accent justify-center text-lg font-semibold tracking-widest uppercase">
+          <h2
+            id={titleId}
+            className="font-headline text-accent justify-center text-lg font-semibold tracking-widest uppercase"
+          >
             Carrinho
           </h2>
-          <button onClick={toggleDrawer} aria-label="Fechar carrinho">
+          <button onClick={closeDrawer} aria-label="Fechar carrinho">
             <X className="text-outline" size={22} />
           </button>
         </div>

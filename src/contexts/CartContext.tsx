@@ -11,6 +11,7 @@ export type CartContextValue = {
   reconcileWith: (catalog: CatalogProduct[]) => void
   isDrawerOpen: boolean
   toggleDrawer: () => void
+  closeDrawer: () => void
 }
 
 export const CartContext = createContext<CartContextValue | undefined>(

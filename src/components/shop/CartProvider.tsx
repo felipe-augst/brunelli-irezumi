@@ -41,6 +41,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setIsDrawerOpen((prev) => !prev)
   }
 
+  // Idempotente e com identidade estável: seguro para Escape e backdrop
+  const closeDrawer = useCallback(() => setIsDrawerOpen(false), [])
+
   function addItem(newItem: CartItem) {
     persistCart(addToCart(items, newItem))
   }
@@ -75,6 +78,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         reconcileWith,
         isDrawerOpen,
         toggleDrawer,
+        closeDrawer,
       }}
     >
       {children}

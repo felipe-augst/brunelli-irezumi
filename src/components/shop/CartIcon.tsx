@@ -14,10 +14,14 @@ export function CartIcon() {
   return (
     <button
       onClick={toggleDrawer}
+      aria-label={`Abrir carrinho, ${totalItems} ${totalItems === 1 ? 'item' : 'itens'}`}
       className="text-on-surface hover:text-accent relative transition-colors lg:mb-2"
     >
       <ShoppingBag size={18} />
-      <span className="bg-secondary-container text-on-secondary absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full text-xs font-bold">
+      <span
+        aria-hidden="true"
+        className="bg-secondary-container text-on-secondary absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full text-xs font-bold"
+      >
         {totalItems}
       </span>
     </button>
