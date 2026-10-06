@@ -43,7 +43,7 @@ model Product {
     id              String        @id @default(cuid())
     title           String
     description     String
-    priceCents      Int
+    priceCents      Int?
     promoPriceCents Int?
     category        ProductCategory
     tags            ProductTag[]
