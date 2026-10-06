@@ -11,6 +11,7 @@ Implemente a issue #$ARGUMENTS. Siga o critério de aceite e o CLAUDE.md.
 
 - `git branch --show-current` precisa ser o branch da issue (`Branch sugerida` no corpo). Nunca `develop` nem `main`.
 - `git status` precisa estar limpo.
+- Se `node_modules` ou `.env` não existirem (worktree novo), rode `bash scripts/setup-worktree.sh` (copia o `.env` do worktree principal e roda `npm ci`).
 - Leia a issue com `gh issue view $ARGUMENTS`. Se houver "Blocked by", cheque se o bloqueador já foi mergeado.
 
 ## 2. Plano (espere o meu ok)
