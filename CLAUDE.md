@@ -265,18 +265,6 @@ Documentadas em `.env.example`: `DATABASE_URL` (com `sslmode=verify-full`), `JWT
 - Criação de produto com falha de upload é desfeita (`DELETE`) em vez de salvar rascunho.
 - A reconciliação do carrinho com o catálogo só roda ao abrir `/loja`; o pedido é conferido pelo estúdio no WhatsApp antes de qualquer pagamento.
 
-## Dívida técnica conhecida
-
-Cada item tem issue aberta no GitHub (remover daqui quando a issue fechar):
-
-- Tipo `Product` redeclarado em `ProductCard` e `ProductGrid`, com mapper e `orderBy` (#62); enums do Zod, tipos `GalleryImage` e nomes de `auth` (#65); labels e mapas de categoria duplicados (#64).
-- `url` gravada no banco em vez da `key` do R2, com extração por `replace` nas rotas de exclusão (#63); objeto órfão no R2 quando o `PUT` dá certo mas o registro da imagem falha (#59).
-- Lógica de reordenação duplicada entre galeria e produto (#61); sem constraint única em `order` e reordenação concorrente (#60).
-- `PATCH` de produto devolve 500 se o produto for apagado entre a leitura e o update, P2025 (#56).
-- CSP só em modo Report-Only, sem enforcement (#106, #107).
-- Validação de variáveis de ambiente no boot (#78); `eslint.config.mjs` sem `ignores` (#41).
-- Testes ausentes: comportamento das rotas (#74), `lib/products`, `lib/gallery` e schemas de galeria e login (#75), componentes da loja e do carrinho (#76), `requireAdmin` com token válido, expirado e adulterado (#86).
-
 ## Agent skills
 
 ### Issue tracker
