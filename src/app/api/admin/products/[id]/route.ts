@@ -5,7 +5,7 @@ import { updateProductSchema } from '@/schemas/product'
 import { revalidateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/require-admin'
 import { parseJsonBody } from '@/lib/parse-json-body'
-import { isPromoPriceValid } from '@/server/product-pricing'
+import { getPricingError } from '@/server/product-pricing'
 
 export async function DELETE(
   _request: Request,
@@ -97,18 +97,36 @@ export async function PATCH(
       )
     }
 
-    // Valor enviado ou o atual quando omitido; null remove a promoção
-    const effectivePrice = parsed.data.priceCents ?? current.priceCents
-    const effectivePromo =
-      parsed.data.promoPriceCents === undefined
-        ? current.promoPriceCents
-        : parsed.data.promoPriceCents
+    // Só confere as regras de preço quando a requisição toca nesses campos ou
+    // publica o produto: um PATCH parcial (ex.: só o título) não pode ser
+    // travado por um produto antigo inconsistente, mas ninguém o ativa assim.
+    const touchesPricing =
+      parsed.data.priceCents !== undefined ||
+      parsed.data.promoPriceCents !== undefined ||
+      parsed.data.tags !== undefined ||
+      parsed.data.active === true
 
-    if (!isPromoPriceValid(effectivePrice, effectivePromo)) {
-      return NextResponse.json(
-        { error: 'Preço promocional deve ser menor que o preço normal' },
-        { status: 400 },
-      )
+    if (touchesPricing) {
+      // Valor enviado ou o atual quando omitido; null remove (preço só sob
+      // encomenda, promoção em qualquer caso)
+      const pricingError = getPricingError({
+        priceCents:
+          parsed.data.priceCents === undefined
+            ? current.priceCents
+            : parsed.data.priceCents,
+        promoPriceCents:
+          parsed.data.promoPriceCents === undefined
+            ? current.promoPriceCents
+            : parsed.data.promoPriceCents,
+        tags: parsed.data.tags ?? current.tags,
+      })
+
+      if (pricingError) {
+        return NextResponse.json(
+          { error: pricingError.message },
+          { status: 400 },
+        )
+      }
     }
 
     const { tags, ...rest } = parsed.data
