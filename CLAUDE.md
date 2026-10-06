@@ -130,7 +130,8 @@ Modelos: `AdminUser`, `Product`, `ProductImage` (1:N com cascade), `GalleryImage
 Modelagem que deve ser preservada:
 
 - Preço em **centavos (`Int`)**, nunca `Float`. Formatar só na exibição com `formatCentsToBRL`.
-- Promoção = `promoPriceCents` preenchido. Não existe booleano `isOnSale`.
+- Promoção = `promoPriceCents` preenchido. Não existe booleano `isOnSale`. A tag `ON_SALE` é só o selo, e o servidor rejeita (`getPricingError`) promoção sem a tag e a tag sem promoção.
+- `priceCents` é `Int?`: só produto `MADE_TO_ORDER` pode ficar sem preço (e não pode ter promoção).
 - Esconder produto com `active: false`, não apagar.
 - `order` de imagens: galeria começa em **1**, imagens de produto começam em **0**. Reordenação troca ou desloca valores dentro de `$transaction`.
   Particularidades do Prisma 7 que já causaram erro:
@@ -181,7 +182,7 @@ Modelagem que deve ser preservada:
 
 - Criação: o `POST` cria o produto com `active: false`. O formulário sobe cada imagem em sequência (comprimir, `upload-url`, `PUT`, registrar), checa `res.ok` em cada etapa e só no fim ativa com `PATCH { active: true }`. Se qualquer etapa falhar na criação, chama `DELETE` no produto (melhor esforço) e mantém o formulário preenchido para uma nova tentativa.
 - Edição: falha parcial de imagem não desfaz nada. O formulário limpa a seleção de arquivos para um novo envio não duplicar o que já entrou.
-- O `PATCH` valida a promoção contra o preço efetivo (valor enviado ou o atual) com `isPromoPriceValid` (`server/product-pricing.ts`). Distinguir "omitido" de `null` com `=== undefined`, nunca com `??`: `promoPriceCents: null` remove a promoção.
+- O `PATCH` valida preço, promoção e tags no estado efetivo (valor enviado ou o atual) com `getPricingError` (`server/product-pricing.ts`), só quando a requisição toca nesses campos ou ativa o produto (`active: true`). Distinguir "omitido" de `null` com `=== undefined`, nunca com `??`: `promoPriceCents: null` remove a promoção e `priceCents: null` remove o preço (só sob encomenda). Limites: título 120, descrição 2000, preço 10.000.000 centavos.
 - `updateProductSchema` não pode aplicar `.default([])` em `tags`. O `.partial()` mantém o default, e um `PATCH` sem `tags` apagaria as tags do produto.
 - Exclusão (produto, imagem de produto e imagem de galeria): apaga o registro no banco primeiro e o objeto no R2 depois. Falha do R2 não vira erro de resposta: `console.error` com a `key` (objeto órfão).
 - Botões de reordenação ficam desabilitados da requisição até o `router.refresh()` terminar.
@@ -266,7 +267,7 @@ Documentadas em `.env.example`: `DATABASE_URL` (com `sslmode=verify-full`), `JWT
 
 ## Dívida técnica conhecida
 
-Itens da auditoria ainda abertos (remover daqui quando forem resolvidos): tipo `Product` redeclarado em vários componentes; `url` gravada no banco em vez da `key` do R2 (extração por `replace`, e objeto órfão no R2 quando o `PUT` dá certo mas o registro da imagem falha); lógica de reordenação duplicada entre galeria e produto; sem constraint única em `order` (a troca por dois `update` a violaria no meio da operação); reordenação concorrente entre linhas diferentes; `PATCH` de produto devolve 500 se o produto for apagado entre a leitura e o update (P2025); sem limite de tamanho no `upload-url` (exige mudar `lib/r2.ts`); CSP não configurada; o schema exige preço em produto sob encomenda, que nunca é exibido; o `eslint.config.mjs` não tem `ignores` (`eslint .` varre `.next`); `DATABASE_URL` com `verify-full` ainda só no `.env` local (falta Vercel e GitHub Actions); testes de rotas, de componentes e do proxy (schemas de produto, precificação e carrinho já têm testes).
+Itens da auditoria ainda abertos (remover daqui quando forem resolvidos): tipo `Product` redeclarado em vários componentes; `url` gravada no banco em vez da `key` do R2 (extração por `replace`, e objeto órfão no R2 quando o `PUT` dá certo mas o registro da imagem falha); lógica de reordenação duplicada entre galeria e produto; sem constraint única em `order` (a troca por dois `update` a violaria no meio da operação); reordenação concorrente entre linhas diferentes; `PATCH` de produto devolve 500 se o produto for apagado entre a leitura e o update (P2025); sem limite de tamanho no `upload-url` (exige mudar `lib/r2.ts`); CSP não configurada; o `eslint.config.mjs` não tem `ignores` (`eslint .` varre `.next`); `DATABASE_URL` com `verify-full` ainda só no `.env` local (falta Vercel e GitHub Actions); testes de rotas, de componentes e do proxy (schemas de produto, precificação e carrinho já têm testes).
 
 ## Agent skills
 
