@@ -7,28 +7,29 @@ Contexto do projeto para uso com Claude e GitHub Copilot.
 ## Sobre o Projeto
 
 Site institucional para estúdio de tatuagem japonesa em Jundiaí-SP.
-Stack: **Next.js 15 App Router · TypeScript · Tailwind CSS v4**
+Stack: **Next.js 16 App Router · TypeScript · Tailwind CSS v4**
 
 ---
 
 ## Estrutura de Pastas
 
 ```
-app/
-  layout.tsx          # Root layout: fonts, metadata, JSON-LD
-  page.tsx            # Página home (composição das sections)
-  globals.css         # Tailwind + @import Material Symbols
+src/
+  app/
+    layout.tsx        # Root layout: fonts, metadata, JSON-LD
+    page.tsx          # Página home (composição das sections)
+    globals.css       # Tailwind + @theme tokens
 
-components/
-  layout/             # Header, Footer, MobileNav
-  sections/           # Uma section por arquivo (HeroSection, etc.)
-  ui/                 # Componentes reutilizáveis (StarRating, FaqItem, etc.)
+  components/
+    layout/           # Header, Footer, MobileNav
+    sections/         # Uma section por arquivo (HeroSection, etc.)
+    ui/               # Componentes reutilizáveis (GalleryGrid, Lightbox, etc.)
 
-constants/
-  index.ts            # Todos os dados estáticos: textos, URLs, imagens
+  data/
+    projects.ts       # Todos os dados estáticos: textos, URLs, imagens
 
-types/
-  index.ts            # Interfaces TypeScript do projeto
+  types/
+    index.ts          # Interfaces TypeScript do projeto
 
 public/
   images/             # Imagens locais otimizadas em .webp
@@ -57,8 +58,8 @@ export default function Card() {}
 
 ### Dados Estáticos
 
-- Todo texto, URL e dado estático fica em `constants/index.ts`
-- Componentes **nunca** têm strings hardcoded — sempre importam de constants
+- Todo texto, URL e dado estático fica em `src/data/projects.ts`
+- Componentes **nunca** têm strings hardcoded — sempre importam de `@/data/projects`
 
 ```tsx
 // ✅ Correto
@@ -93,8 +94,8 @@ href = 'https://wa.me/5511999999999'
 
 ### Tailwind
 
-- Projeto usa **Tailwind v3** — não usar classes v4 (`bg-linear-to-*`, `text-shadow-*`, etc.)
-- Gradientes: `bg-gradient-to-t`, `bg-gradient-to-l`, etc.
+- Projeto usa **Tailwind v4** (tokens em `@theme` no `globals.css`)
+- Gradientes: `bg-linear-to-t`, `bg-linear-to-l`, etc. (não usar `bg-gradient-to-*`, que é v3)
 - Altura de tela: sempre `min-h-[100dvh]`, nunca `min-h-screen` (quebra no mobile)
 - Aspect ratio: usar `aspect-[3/2]`, `aspect-square`, etc.
 
@@ -127,17 +128,7 @@ Os tokens principais usados no projeto:
 
 ## Ícones
 
-Projeto usa **Material Symbols Outlined** via CSS (`globals.css`).
-
-```tsx
-// Uso correto
-<span className="material-symbols-outlined">arrow_forward</span>
-
-// Com fill (ícone preenchido)
-<span className="material-symbols-outlined fill-icon">star</span>
-```
-
-Lucide React também está instalado para ícones pontuais:
+Projeto usa **Lucide React** para ícones. Não carregar fontes de ícones externas (ex.: Google Fonts / Material Symbols).
 
 ```tsx
 import { MoveRight } from 'lucide-react'
@@ -163,9 +154,6 @@ import { MoveRight } from 'lucide-react'
 
 **`min-h-screen` gera faixa vazia no mobile**
 → Sempre usar `min-h-[100dvh]`
-
-**Ícones Material Symbols não aparecem**
-→ O `@import` está no topo de `globals.css` — não usar `<link>` no `layout.tsx`
 
 **Imagem com baixa definição**
 → Verificar se o aspect ratio do container casa com as proporções da imagem original e adicionar `quality={90}`

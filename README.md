@@ -9,7 +9,6 @@ Site institucional para estúdio de tatuagem japonesa em Jundiaí-SP.
 - **Tailwind CSS v4**
 - **Framer Motion** — animações de scroll
 - **Lucide React** — ícones pontuais
-- **Material Symbols Outlined** — ícones via CSS
 - **next/font** — Epilogue + Manrope otimizadas
 - **next/image** — lazy load, WebP e responsividade automáticos
 
@@ -37,7 +36,7 @@ brunelli-irezumi/
 │ ├── app/
 │ │ ├── layout.tsx # Root layout: fontes, metadata, JSON-LD
 │ │ ├── page.tsx # Home (composição das sections)
-│ │ ├── globals.css # Tailwind + @theme tokens + ícones
+│ │ ├── globals.css # Tailwind + @theme tokens
 │ │ ├── sitemap.ts # Sitemap dinâmico
 │ │ ├── robots.ts # Robots dinâmico
 │ │ └── servicos/
