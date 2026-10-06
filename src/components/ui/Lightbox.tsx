@@ -1,7 +1,8 @@
 'use client'
 
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import Image from 'next/image'
+import { useDialogA11y } from '@/hooks/useDialogA11y'
 import type { GalleryImage } from '@/types'
 
 type LightboxProps = {
@@ -20,13 +21,17 @@ export function Lightbox({
   onPrev,
 }: LightboxProps) {
   const currentImage = images[currentIndex]
+  const dialogRef = useRef<HTMLDivElement>(null)
+
+  // Foco, armadilha, inert, Escape e retorno do foco (o Lightbox só monta aberto)
+  useDialogA11y({ isOpen: true, onClose, containerRef: dialogRef })
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
       if (e.key === 'ArrowRight') onNext()
       if (e.key === 'ArrowLeft') onPrev()
     },
-    [onClose, onNext, onPrev],
+    [onNext, onPrev],
   )
 
   useEffect(() => {
@@ -43,7 +48,9 @@ export function Lightbox({
   return (
     // Overlay — clique fora fecha
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+      ref={dialogRef}
+      tabIndex={-1}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm outline-none"
       onClick={onClose}
       role="dialog"
       aria-modal="true"

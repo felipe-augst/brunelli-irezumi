@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Lightbox } from '../Lightbox'
@@ -71,7 +72,7 @@ describe('Lightbox', () => {
         onPrev={onPrev}
       />,
     )
-    fireEvent.keyDown(window, { key: 'Escape' })
+    fireEvent.keyDown(document, { key: 'Escape' })
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
@@ -144,5 +145,91 @@ describe('Lightbox', () => {
       />,
     )
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  describe('acessibilidade', () => {
+    function renderOpen(currentIndex = 1) {
+      return render(
+        <Lightbox
+          images={MOCK_IMAGES}
+          currentIndex={currentIndex}
+          onClose={onClose}
+          onNext={onNext}
+          onPrev={onPrev}
+        />,
+      )
+    }
+
+    it('move o foco para o botão de fechar ao abrir', () => {
+      renderOpen()
+      expect(screen.getByRole('button', { name: 'Fechar' })).toHaveFocus()
+    })
+
+    it('prende Tab e Shift+Tab dentro do diálogo', async () => {
+      const user = userEvent.setup()
+      renderOpen()
+      const dialog = screen.getByRole('dialog')
+      const close = screen.getByRole('button', { name: 'Fechar' })
+      const next = screen.getByRole('button', { name: 'Próxima imagem' })
+
+      await user.tab()
+      await user.tab()
+      expect(dialog).toContainElement(document.activeElement as HTMLElement)
+      expect(next).toHaveFocus()
+
+      await user.tab()
+      expect(close).toHaveFocus()
+
+      await user.tab({ shift: true })
+      expect(next).toHaveFocus()
+    })
+
+    it('marca o conteúdo de fundo como inert enquanto aberto', () => {
+      const { unmount } = render(
+        <>
+          <button>Miniatura</button>
+          <Lightbox
+            images={MOCK_IMAGES}
+            currentIndex={0}
+            onClose={onClose}
+            onNext={onNext}
+            onPrev={onPrev}
+          />
+        </>,
+      )
+      const thumb = screen.getByText('Miniatura')
+      expect(thumb).toHaveAttribute('inert')
+      unmount()
+      expect(thumb).not.toHaveAttribute('inert')
+    })
+
+    it('devolve o foco ao elemento que abriu ao fechar', async () => {
+      const user = userEvent.setup()
+      function Host() {
+        const [open, setOpen] = useState(false)
+        return (
+          <>
+            <button onClick={() => setOpen(true)}>Abrir</button>
+            {open && (
+              <Lightbox
+                images={MOCK_IMAGES}
+                currentIndex={0}
+                onClose={() => setOpen(false)}
+                onNext={onNext}
+                onPrev={onPrev}
+              />
+            )}
+          </>
+        )
+      }
+      render(<Host />)
+      const opener = screen.getByRole('button', { name: 'Abrir' })
+      await user.click(opener)
+      expect(screen.getByRole('button', { name: 'Fechar' })).toHaveFocus()
+
+      await user.click(screen.getByRole('button', { name: 'Fechar' }))
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(opener).toHaveFocus()
+    })
   })
 })
