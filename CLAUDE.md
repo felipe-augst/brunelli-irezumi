@@ -265,10 +265,6 @@ Documentadas em `.env.example`: `DATABASE_URL` (com `sslmode=verify-full`), `JWT
 - Criação de produto com falha de upload é desfeita (`DELETE`) em vez de salvar rascunho.
 - A reconciliação do carrinho com o catálogo só roda ao abrir `/loja`; o pedido é conferido pelo estúdio no WhatsApp antes de qualquer pagamento.
 
-## Dívida técnica conhecida
-
-Itens da auditoria ainda abertos (remover daqui quando forem resolvidos): tipo `Product` redeclarado em vários componentes; `url` gravada no banco em vez da `key` do R2 (extração por `replace`, e objeto órfão no R2 quando o `PUT` dá certo mas o registro da imagem falha); lógica de reordenação duplicada entre galeria e produto; sem constraint única em `order` (a troca por dois `update` a violaria no meio da operação); reordenação concorrente entre linhas diferentes; `PATCH` de produto devolve 500 se o produto for apagado entre a leitura e o update (P2025); sem limite de tamanho no `upload-url` (exige mudar `lib/r2.ts`); CSP não configurada; o `eslint.config.mjs` não tem `ignores` (`eslint .` varre `.next`); testes de rotas, de componentes e do proxy (schemas de produto, precificação e carrinho já têm testes).
-
 ## Agent skills
 
 ### Issue tracker
