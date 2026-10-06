@@ -55,20 +55,9 @@ type Handler = (
 
 const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const
 
-// Chave: "<caminho relativo da rota> <MÉTODO>"
-const COVERED = [
-  'gallery POST',
-  'gallery/upload-url POST',
-  'gallery/[id] DELETE',
-  'gallery/[id]/reorder POST',
-  'products POST',
-  'products/upload-url POST',
-  'products/[id] DELETE',
-  'products/[id] PATCH',
-  'products/[id]/images POST',
-  'products/[id]/images/[imageId] DELETE',
-  'products/[id]/images/[imageId]/reorder POST',
-]
+// Toda rota de /api/admin é protegida. Exceção pública exige justificativa
+// aqui, no formato "<caminho relativo da rota> <MÉTODO>" (hoje não há nenhuma).
+const PUBLIC_EXCEPTIONS: string[] = []
 
 // Os tipos de import.meta.glob (vite/client) não estão no tsconfig; tipagem local
 const routeModules = (
@@ -84,7 +73,7 @@ function routeKey(path: string) {
 }
 
 async function discoverHandlers() {
-  const found: { key: string; handler: Handler }[] = []
+  const found: { key: string; method: string; handler: Handler }[] = []
   for (const [path, load] of Object.entries(routeModules)) {
     const mod = await load()
     for (const method of METHODS) {
@@ -92,6 +81,7 @@ async function discoverHandlers() {
       if (typeof handler === 'function') {
         found.push({
           key: `${routeKey(path)} ${method}`,
+          method,
           handler: handler as Handler,
         })
       }
@@ -104,12 +94,18 @@ const handlers = await discoverHandlers()
 
 const params = Promise.resolve({ id: 'x', imageId: 'y' })
 
-function callHandler(handler: Handler) {
+const BODY_METHODS = ['POST', 'PUT', 'PATCH']
+
+// Usa o método real do handler; só os que recebem corpo mandam JSON
+function callHandler(method: string, handler: Handler) {
+  const hasBody = BODY_METHODS.includes(method)
   return handler(
     new Request('http://localhost/api/admin/x', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({}),
+      method,
+      ...(hasBody && {
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({}),
+      }),
     }),
     { params },
   )
@@ -120,23 +116,23 @@ beforeEach(() => {
   cookieValue.current = undefined
 })
 
+const protectedHandlers = handlers.filter(
+  (h) => !PUBLIC_EXCEPTIONS.includes(h.key),
+)
+
 describe('/api/admin/*: autenticação', () => {
-  it('descobre as rotas sozinho e cada handler está na tabela de cobertura', () => {
+  it('descobre as rotas sozinho', () => {
     expect(handlers.length).toBeGreaterThan(0)
-    const missing = handlers
-      .map((h) => h.key)
-      .filter((key) => !COVERED.includes(key))
-    expect(missing, 'handler sem teste de autenticação').toEqual([])
   })
 
-  it('toda entrada da tabela corresponde a um handler existente', () => {
+  it('toda exceção pública corresponde a um handler existente', () => {
     const keys = handlers.map((h) => h.key)
-    expect(COVERED.filter((key) => !keys.includes(key))).toEqual([])
+    expect(PUBLIC_EXCEPTIONS.filter((key) => !keys.includes(key))).toEqual([])
   })
 
-  describe.each(handlers)('$key', ({ handler }) => {
+  describe.each(protectedHandlers)('$key', ({ method, handler }) => {
     it('responde 401 em JSON sem cookie e não toca banco nem R2', async () => {
-      const res = await callHandler(handler)
+      const res = await callHandler(method, handler)
 
       expect(res.status).toBe(401)
       expect(res.headers.get('content-type')).toContain('application/json')
@@ -148,7 +144,7 @@ describe('/api/admin/*: autenticação', () => {
     it('responde 401 com token inválido e não toca banco nem R2', async () => {
       cookieValue.current = 'token-invalido'
 
-      const res = await callHandler(handler)
+      const res = await callHandler(method, handler)
 
       expect(res.status).toBe(401)
       expect(touched).toEqual([])
