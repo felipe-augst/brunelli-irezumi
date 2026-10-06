@@ -7,9 +7,7 @@ import {
   changePasswordSchema,
   type ChangePasswordFormData,
 } from '@/schemas/password'
-
-const inputClass =
-  'border-outline-variant bg-surface-container text-on-surface focus-visible:outline-accent rounded-sm border px-3 py-2 text-sm focus-visible:outline'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 
 export function ChangePasswordForm() {
   const [serverError, setServerError] = useState<string | null>(null)
@@ -63,12 +61,10 @@ export function ChangePasswordForm() {
         >
           Senha atual
         </label>
-        <input
+        <PasswordInput
           id="currentPassword"
-          type="password"
           autoComplete="current-password"
           {...register('currentPassword')}
-          className={inputClass}
         />
         {errors.currentPassword && (
           <p role="alert" className="text-secondary-container text-xs">
@@ -84,12 +80,10 @@ export function ChangePasswordForm() {
         >
           Nova senha
         </label>
-        <input
+        <PasswordInput
           id="newPassword"
-          type="password"
           autoComplete="new-password"
           {...register('newPassword')}
-          className={inputClass}
         />
         {errors.newPassword && (
           <p role="alert" className="text-secondary-container text-xs">
@@ -105,12 +99,10 @@ export function ChangePasswordForm() {
         >
           Repetir nova senha
         </label>
-        <input
+        <PasswordInput
           id="confirmNewPassword"
-          type="password"
           autoComplete="new-password"
           {...register('confirmNewPassword')}
-          className={inputClass}
         />
         {errors.confirmNewPassword && (
           <p role="alert" className="text-secondary-container text-xs">
