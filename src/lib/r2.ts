@@ -17,11 +17,16 @@ const r2Client = new S3Client({
 
 const BUCKET_NAME = process.env.R2_BUCKET_NAME!
 
-export async function getUploadUrl(key: string, contentType: string) {
+export async function getUploadUrl(
+  key: string,
+  contentType: string,
+  size: number,
+) {
   const command = new PutObjectCommand({
     Bucket: BUCKET_NAME,
     Key: key,
     ContentType: contentType,
+    ContentLength: size,
   })
   return getSignedUrl(r2Client, command, { expiresIn: 300 })
 }
