@@ -67,7 +67,7 @@ export function ChangePasswordForm() {
           {...register('currentPassword')}
         />
         {errors.currentPassword && (
-          <p role="alert" className="text-secondary-container text-xs">
+          <p role="alert" className="text-secondary text-xs">
             {errors.currentPassword.message}
           </p>
         )}
@@ -86,7 +86,7 @@ export function ChangePasswordForm() {
           {...register('newPassword')}
         />
         {errors.newPassword && (
-          <p role="alert" className="text-secondary-container text-xs">
+          <p role="alert" className="text-secondary text-xs">
             {errors.newPassword.message}
           </p>
         )}
@@ -105,14 +105,14 @@ export function ChangePasswordForm() {
           {...register('confirmNewPassword')}
         />
         {errors.confirmNewPassword && (
-          <p role="alert" className="text-secondary-container text-xs">
+          <p role="alert" className="text-secondary text-xs">
             {errors.confirmNewPassword.message}
           </p>
         )}
       </div>
 
       {serverError && (
-        <p role="alert" className="text-secondary-container text-sm">
+        <p role="alert" className="text-secondary text-sm">
           {serverError}
         </p>
       )}

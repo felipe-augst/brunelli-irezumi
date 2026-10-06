@@ -93,7 +93,7 @@ export function GalleryUploadForm({ category }: { category: GalleryCategory }) {
       )}
 
       {serverError && (
-        <p role="alert" className="text-secondary-container text-sm">
+        <p role="alert" className="text-secondary text-sm">
           {serverError}
         </p>
       )}

@@ -25,7 +25,7 @@ export function DeleteGalleryImageButton({ id }: { id: string }) {
     <button
       onClick={handleDelete}
       aria-label="Excluir imagem"
-      className="text-secondary-container hover:text-on-secondary"
+      className="text-secondary hover:text-on-surface"
     >
       <Trash size={16} />
     </button>
