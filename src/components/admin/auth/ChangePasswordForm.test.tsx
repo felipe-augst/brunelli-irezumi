@@ -41,6 +41,21 @@ describe('ChangePasswordForm', () => {
     vi.restoreAllMocks()
   })
 
+  it('permite mostrar cada um dos três campos de senha', async () => {
+    const user = userEvent.setup()
+    render(<ChangePasswordForm />)
+    const fields = ['Senha atual', 'Nova senha', 'Repetir nova senha']
+
+    const toggles = screen.getAllByRole('button', { name: 'Mostrar senha' })
+    expect(toggles).toHaveLength(fields.length)
+
+    for (const [index, label] of fields.entries()) {
+      expect(screen.getByLabelText(label)).toHaveAttribute('type', 'password')
+      await user.click(toggles[index]!)
+      expect(screen.getByLabelText(label)).toHaveAttribute('type', 'text')
+    }
+  })
+
   it('não envia nada quando a nova senha é curta e mostra o erro', async () => {
     await fillAndSubmit({ next: 'curta' })
 

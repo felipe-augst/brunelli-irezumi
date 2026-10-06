@@ -5,12 +5,11 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema, type LoginFormData } from '@/schemas/login'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff } from 'lucide-react'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 
 export function LoginForm() {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
-  const [showPassword, setShowPassword] = useState(false)
 
   const {
     register,
@@ -67,22 +66,7 @@ export function LoginForm() {
           <label htmlFor="password" className="text-on-surface-variant text-sm">
             Senha
           </label>
-          <div className="relative">
-            <input
-              id="password"
-              type={showPassword ? 'text' : 'password'}
-              {...register('password')}
-              className="border-outline-variant bg-surface-container text-on-surface focus-visible:outline-accent w-full rounded-sm border px-3 py-2 pr-10 text-sm focus-visible:outline"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-              className="text-surface-container-low/60 absolute top-1/2 right-3 -translate-y-1/2"
-            >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
+          <PasswordInput id="password" {...register('password')} />
           {errors.password && (
             <p role="alert" className="text-secondary-container text-xs">
               {errors.password.message}
