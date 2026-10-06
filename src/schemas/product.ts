@@ -76,5 +76,6 @@ export const updateProductSchema = productShape
   })
   .partial()
 
+export type ProductTagValue = z.infer<typeof productTagSchema>
 export type CreateProductData = z.input<typeof createProductSchema>
 export type UpdateProductData = z.input<typeof updateProductSchema>
