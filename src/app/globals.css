@@ -92,3 +92,9 @@
     background: #ffb3b1;
   }
 }
+
+/* Abertura já vista hoje: o script do <head> marca o <html> antes da pintura.
+   Fora do @layer para vencer as utilities do Tailwind. */
+html.skeleton-seen [data-skeleton] {
+  display: none;
+}
