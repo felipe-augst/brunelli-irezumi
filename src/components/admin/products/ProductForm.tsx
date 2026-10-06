@@ -94,7 +94,10 @@ export function ProductForm({ product }: ProductFormProps) {
         const urlResponse = await fetch('/api/admin/products/upload-url', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ contentType: 'image/webp' }),
+          body: JSON.stringify({
+            contentType: 'image/webp',
+            size: compressedImage.size,
+          }),
         })
         if (!urlResponse.ok) throw new Error(`${step} (${urlResponse.status})`)
         const { uploadUrl, key } = await urlResponse.json()
