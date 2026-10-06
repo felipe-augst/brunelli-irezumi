@@ -145,7 +145,7 @@ Modelagem que deve ser preservada:
 
 ## Segurança (regras não negociáveis)
 
-- **Toda rota em `/api/admin/*` tem duas camadas:** o `proxy.ts` (matcher cobre `/admin/*` e `/api/admin/*`; API sem sessão responde 401 em JSON) **e** `requireAdmin()` chamado no início de cada handler. O proxy nunca é a única barreira.
+- **Toda rota em `/api/admin/*` tem duas camadas:** o `proxy.ts` (matcher cobre `/admin/*` e `/api/admin/*`; API sem sessão responde 401 em JSON) **e** `requireAdmin()` chamado no início de cada handler. O proxy nunca é a única barreira. Páginas e layout do painel que leem dados chamam `requireAdminPage()` (`lib/require-admin-page.ts`, redireciona para o login), porque o layout não é renderizado de novo na navegação entre páginas.
 - Ordem padrão de um handler: `requireAdmin()` → `parseJsonBody()` (400 se inválido) → validação Zod com `safeParse` (400 se falhar) → `try/catch` com a lógica.
 - Respostas de erro são genéricas. O detalhe vai para `console.error` no servidor. Nunca devolver stack trace nem `error.message` ao cliente.
 - Login: sempre 401 para qualquer falha (usuário inexistente, bloqueio, senha errada); roda bcrypt mesmo quando o usuário não existe (hash fictício) para igualar o tempo de resposta.
@@ -258,7 +258,7 @@ Documentadas em `.env.example`: `DATABASE_URL` (com `sslmode=verify-full`), `JWT
 - Sem recuperação de senha por e-mail: admin único, troca de senha dentro do painel e reset por script.
 - Sem gateway de pagamento, sem persistência de pedidos, sem contador de estoque.
 - Admin único, sem papéis. Bloqueio de conta por tentativas no login; sem rate limit por IP.
-- JWT de 7 dias sem revogação.
+- JWT de 7 dias sem revogação, exceto na troca de senha: `requireAdmin()` consulta o `AdminUser` e rejeita token inexistente ou com `iat` anterior a `passwordChangedAt`. O proxy continua checando só a assinatura.
 - Imagens públicas pelo domínio `r2.dev`; domínio próprio exigiria mover o DNS inteiro para a Cloudflare.
 - Previews da Vercel sem CORS liberado no R2.
 - Criação de produto com falha de upload é desfeita (`DELETE`) em vez de salvar rascunho.
