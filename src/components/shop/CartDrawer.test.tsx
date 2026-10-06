@@ -98,4 +98,13 @@ describe('CartDrawer', () => {
     await user.click(backdrop as HTMLElement)
     expect(document.querySelector('[role="dialog"]')).toHaveAttribute('inert')
   })
+
+  it('o botão de remover usa cor com contraste suficiente', async () => {
+    const user = userEvent.setup()
+    renderShop([makeItem()])
+    await user.click(screen.getByRole('button', { name: /Abrir carrinho/ }))
+    const remove = screen.getByRole('button', { name: /Remover Camiseta/ })
+    expect(remove).toHaveClass('text-secondary')
+    expect(remove).not.toHaveClass('text-secondary-container')
+  })
 })

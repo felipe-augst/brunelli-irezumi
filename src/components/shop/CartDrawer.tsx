@@ -126,7 +126,7 @@ export function CartDrawer() {
                 <button
                   onClick={() => removeItem(item.productId)}
                   aria-label={`Remover ${item.title} do carrinho`}
-                  className="text-secondary-container hover:text-on-secondary"
+                  className="text-secondary hover:text-on-surface"
                 >
                   <Trash2 size={18} />
                 </button>
