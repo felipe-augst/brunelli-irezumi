@@ -27,18 +27,24 @@ export default defineConfig({
             '.claude',
             'src/app/api/**',
             'src/proxy.test.ts',
+            'src/app/*.test.ts',
           ],
         },
       },
       {
-        // Rotas de API e proxy: ambiente node, com stub de server-only e
-        // JWT_SECRET de teste. Usado por testes de rota (#50, #51, #74).
+        // Rotas de API, proxy e metadados de rota (sitemap, robots): ambiente
+        // node, com stub de server-only e JWT_SECRET de teste. Usado por
+        // testes de rota (#50, #51, #74).
         extends: true,
         test: {
           name: 'server',
           environment: 'node',
           setupFiles: ['./vitest.setup.server.ts'],
-          include: ['src/app/api/**/*.test.ts', 'src/proxy.test.ts'],
+          include: [
+            'src/app/api/**/*.test.ts',
+            'src/app/*.test.ts',
+            'src/proxy.test.ts',
+          ],
           env: { JWT_SECRET: 'test-only-jwt-secret-not-for-production' },
         },
       },
