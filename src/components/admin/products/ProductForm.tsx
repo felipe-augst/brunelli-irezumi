@@ -14,7 +14,7 @@ type ProductFormProps = {
     id: string
     title: string
     description: string
-    priceCents: number
+    priceCents: number | null
     promoPriceCents: number | null
     category: CreateProductData['category']
     tags: CreateProductData['tags']
@@ -40,7 +40,7 @@ export function ProductForm({ product }: ProductFormProps) {
       ? {
           title: product.title,
           description: product.description,
-          priceCents: product.priceCents,
+          priceCents: product.priceCents ?? undefined,
           promoPriceCents: product.promoPriceCents ?? undefined,
           category: product.category,
           tags: product.tags,
@@ -63,9 +63,13 @@ export function ProductForm({ product }: ProductFormProps) {
 
     const method = product ? 'PATCH' : 'POST'
 
-    // Na edição, campo vazio vira null para remover a promoção
+    // Na edição, campo vazio vira null para remover o valor (omitir manteria o atual)
     const payload = product
-      ? { ...data, promoPriceCents: data.promoPriceCents ?? null }
+      ? {
+          ...data,
+          priceCents: data.priceCents ?? null,
+          promoPriceCents: data.promoPriceCents ?? null,
+        }
       : data
 
     let step = product
@@ -223,11 +227,15 @@ export function ProductForm({ product }: ProductFormProps) {
         )}
       </div>
 
-      <CurrencyInput name="priceCents" control={control} label="Preço" />
+      <CurrencyInput
+        name="priceCents"
+        control={control}
+        label="Preço (opcional só para sob encomenda)"
+      />
       <CurrencyInput
         name="promoPriceCents"
         control={control}
-        label="Preço promocional (opcional)"
+        label="Preço promocional (exige a tag Promoção)"
       />
 
       <div className="flex flex-col gap-1">
@@ -264,6 +272,11 @@ export function ProductForm({ product }: ProductFormProps) {
             {label}
           </label>
         ))}
+        {errors.tags && (
+          <p role="alert" className="text-secondary-container text-sm">
+            {errors.tags.message}
+          </p>
+        )}
       </fieldset>
 
       {serverError && (

@@ -83,7 +83,9 @@ export default async function ProductsPage() {
               </p>
               <div className="mt-2 flex gap-2">
                 <span className="text-on-surface-variant text-sm">
-                  {formatCentsToBRL(product.priceCents)}
+                  {product.priceCents === null
+                    ? 'Valor a consultar'
+                    : formatCentsToBRL(product.priceCents)}
                 </span>
               </div>
               <div className="mt-2 flex w-full justify-end gap-4">

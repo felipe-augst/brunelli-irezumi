@@ -252,6 +252,14 @@ describe('reconcileCart', () => {
     expect(result).toEqual({ items: [], changed: true })
   })
 
+  it('descarta produto que ficou sem preço', () => {
+    const result = reconcileCart(
+      [makeItem()],
+      [makeProduct({ priceCents: null })],
+    )
+    expect(result).toEqual({ items: [], changed: true })
+  })
+
   it('atualiza preço, promoção, título e imagem preservando quantity', () => {
     const result = reconcileCart(
       [makeItem({ quantity: 4 })],

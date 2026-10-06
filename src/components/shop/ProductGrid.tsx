@@ -9,7 +9,7 @@ type Product = {
   id: string
   title: string
   description: string
-  priceCents: number
+  priceCents: number | null
   promoPriceCents: number | null
   category: string
   tags: string[]
