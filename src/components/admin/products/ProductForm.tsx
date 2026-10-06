@@ -7,7 +7,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CurrencyInput } from '@/components/ui/CurrencyInput'
 import { compressImage } from '@/lib/compress-image'
-import { CATEGORY_LABELS, TAG_LABELS } from '@/data/product-labels'
+import { readApiError } from '@/lib/read-api-error'
+import { TagCheckboxes } from './TagCheckboxes'
+import { CATEGORY_LABELS } from '@/data/product-labels'
 
 type ProductFormProps = {
   product?: {
@@ -45,7 +47,7 @@ export function ProductForm({ product }: ProductFormProps) {
           category: product.category,
           tags: product.tags,
         }
-      : undefined,
+      : { tags: [] },
   })
 
   async function onSubmit(data: CreateProductData) {
@@ -77,6 +79,15 @@ export function ProductForm({ product }: ProductFormProps) {
       : 'Falha ao criar o produto'
     let createdId: string | null = null
     let updated = false
+    let apiMessage: string | null = null
+
+    // Falha de qualquer etapa vira erro; no 400 guarda a mensagem da API
+    // (pt-BR e genérica) para mostrar ao usuário em vez do texto da etapa
+    async function ensureOk(res: Response) {
+      if (res.ok) return
+      if (res.status === 400) apiMessage = await readApiError(res)
+      throw new Error(`${step} (${res.status})`)
+    }
 
     try {
       const res = await fetch(url, {
@@ -84,7 +95,7 @@ export function ProductForm({ product }: ProductFormProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      if (!res.ok) throw new Error(`${step} (${res.status})`)
+      await ensureOk(res)
 
       const productId: string = product ? product.id : (await res.json()).id
       if (product) updated = true
@@ -103,7 +114,7 @@ export function ProductForm({ product }: ProductFormProps) {
             size: compressedImage.size,
           }),
         })
-        if (!urlResponse.ok) throw new Error(`${step} (${urlResponse.status})`)
+        await ensureOk(urlResponse)
         const { uploadUrl, key } = await urlResponse.json()
 
         step = 'Falha ao enviar a imagem'
@@ -112,7 +123,7 @@ export function ProductForm({ product }: ProductFormProps) {
           headers: { 'content-type': 'image/webp' },
           body: compressedImage,
         })
-        if (!putResponse.ok) throw new Error(`${step} (${putResponse.status})`)
+        await ensureOk(putResponse)
 
         step = 'Falha ao registrar a imagem'
         const registerResponse = await fetch(
@@ -123,9 +134,7 @@ export function ProductForm({ product }: ProductFormProps) {
             body: JSON.stringify({ key }),
           },
         )
-        if (!registerResponse.ok) {
-          throw new Error(`${step} (${registerResponse.status})`)
-        }
+        await ensureOk(registerResponse)
       }
 
       if (!product) {
@@ -138,13 +147,11 @@ export function ProductForm({ product }: ProductFormProps) {
             body: JSON.stringify({ active: true }),
           },
         )
-        if (!activateResponse.ok) {
-          throw new Error(`${step} (${activateResponse.status})`)
-        }
+        await ensureOk(activateResponse)
       }
     } catch (error) {
       console.error(step, error)
-      setServerError(step)
+      setServerError(apiMessage ?? step)
 
       if (createdId) {
         // Desfaz a criação (melhor esforço) para não deixar produto incompleto
@@ -264,23 +271,7 @@ export function ProductForm({ product }: ProductFormProps) {
         )}
       </div>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-on-surface-variant text-sm">Tags</legend>
-        {Object.entries(TAG_LABELS).map(([value, label]) => (
-          <label
-            key={value}
-            className="text-on-surface flex items-center gap-2 text-sm"
-          >
-            <input type="checkbox" value={value} {...register('tags')} />
-            {label}
-          </label>
-        ))}
-        {errors.tags && (
-          <p role="alert" className="text-secondary text-sm">
-            {errors.tags.message}
-          </p>
-        )}
-      </fieldset>
+      <TagCheckboxes control={control} />
 
       {serverError && (
         <p role="alert" className="text-secondary text-sm">

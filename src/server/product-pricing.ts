@@ -64,3 +64,30 @@ export function getPricingError({
 
   return null
 }
+
+const PRICING_FIELDS: readonly PropertyKey[] = [
+  'priceCents',
+  'promoPriceCents',
+  'tags',
+]
+
+type ValidationIssue = {
+  code: string
+  path: readonly PropertyKey[]
+  message: string
+}
+
+// Única mensagem de validação que pode ir ao cliente: a das regras de preço
+// (issue `custom` num campo de preço, vinda do superRefine). O resto do Zod
+// nunca deve vazar.
+export function getPricingIssueMessage(
+  issues: readonly ValidationIssue[],
+): string | null {
+  const issue = issues.find(
+    (i) =>
+      i.code === 'custom' &&
+      i.path[0] !== undefined &&
+      PRICING_FIELDS.includes(i.path[0]),
+  )
+  return issue?.message ?? null
+}
